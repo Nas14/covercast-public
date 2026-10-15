@@ -1,0 +1,7 @@
+employee_code,name,expected_eligible,expected_failed_rule,expected_rank,expected_tag,travel_minutes,hours_after,proximity,hours_headroom,extra_skills,donor_safety,fairness,score
+E061,نوره القحطاني,True,,1,recommended,10,32,22.50,8.33,20.00,0.00,10.00,60.83
+E012,خالد الشمري,True,,2,backup,60,48,0.00,0.00,20.00,15.00,10.00,45.00
+E060,ريم العنزي,False,CERT_EXPIRED,,,,,,,,,,
+E053,احمد الدوسري,False,SCOPE_OUT,,,,,,,,,,
+E006,,False,ALREADY_ASSIGNED,,,,,,,,,,
+E018,,False,ALREADY_ASSIGNED,,,,,,,,,,

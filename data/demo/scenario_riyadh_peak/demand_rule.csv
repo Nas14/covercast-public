@@ -1,0 +1,19 @@
+﻿site_type,category,level,extra_staff,source_note
+security_gate,gates_security,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+security_gate,gates_security,high,1,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+security_gate,gates_security,peak,2,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+crowd,crowd_management,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+crowd,crowd_management,high,1,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+crowd,crowd_management,peak,1,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+visitor_service,visitor_services,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+visitor_service,visitor_services,high,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+visitor_service,visitor_services,peak,1,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+medical,medical,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+medical,medical,high,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+medical,medical,peak,1,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+operations,operations_safety,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+operations,operations_safety,high,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+operations,operations_safety,peak,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+safety,operations_safety,normal,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+safety,operations_safety,high,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard
+safety,operations_safety,peak,0,SIMULATED MVP assumption approved by Nouf 2026-10-15; not an official staffing standard

@@ -1,0 +1,22 @@
+{% extends "coverage/base.html" %}
+{% load static %}
+{% block title %}لوحة {{ day|date:"l j F" }} | CoverCast{% endblock %}
+{% block sim_note %}{% if forecast.mode == "osaka_replay" %}أرقام الزوار في هذه الصفحة رسمية من إكسبو أوساكا 2025. قيم الزيادة في الاحتياج ومواقع العرض محاكاة لأغراض العرض.{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block content %}
+<div class="day">
+  <h1>{{ day|date:"l j F Y" }}</h1>
+  <nav class="nav" aria-label="الأيام">
+    {% if prev_day %}<a class="btn quiet small" href="?date={{ prev_day|date:'Y-m-d' }}">اليوم السابق</a>{% endif %}
+    {% if next_day %}<a class="btn quiet small" href="?date={{ next_day|date:'Y-m-d' }}">اليوم التالي</a>{% endif %}
+    {% if replay_link %}<a class="btn quiet small" href="?date={{ replay_link|date:'Y-m-d' }}">إعادة عرض أوساكا 2025</a>{% endif %}
+    {% if back_to_shifts %}<a class="btn quiet small" href="?date={{ back_to_shifts|date:'Y-m-d' }}">العودة إلى مناوبات 2030</a>{% endif %}
+  </nav>
+</div>
+
+<p class="live-status" data-live-status role="status" aria-live="polite">تتحدّث اللوحة تلقائيًا</p>
+
+<div id="board-live" data-live="{% url 'board-live' %}?date={{ day|date:'Y-m-d' }}" data-version="{{ live_version }}" data-interval="{{ poll_ms }}">
+{% include "coverage/_board_live.html" %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'coverage/covercast.js' %}"></script>{% endblock %}

@@ -1,0 +1,13 @@
+﻿code,kind,template_ar,template_en
+REQ_MET,positive,يستوفي {met} من {total} متطلبات الموقع,Meets {met} of {total} site requirements
+KEEPS_MIN_AT_SITE,positive,نقله لا يكسر الحد الأدنى في موقعه الحالي ({site}),Moving them keeps {site} at its minimum
+NEAR,positive,الأقرب: على بعد {minutes} دقيقة من الموقع,Only {minutes} min away
+HOURS_OK,positive,ساعاته بعد التكليف {hours_after} من {cap},{hours_after} of {cap} weekly hours after assignment
+NEAR_HOURS_CAP,caution,قريب من حد الساعات: {hours_after} من {cap},Close to the hours cap: {hours_after} of {cap}
+CERT_EXPIRED,exclusion,شهادة {skill} تنتهي في {date}، قبل موعد الوردية,"Certificate {skill} expires on {date}, before the shift"
+HOURS_CAP,exclusion,سيتجاوز حد الساعات الأسبوعي ({hours_after} من {cap}),Would exceed the weekly hours cap
+SCOPE_OUT,exclusion,نطاق إعارته لا يشمل المنطقة {zone},Secondment scope does not include zone {zone}
+ABSENT,exclusion,غائب أو في إجازة خلال الوردية,Absent or on leave during the shift
+ALREADY_ASSIGNED,exclusion,مكلّف بالفعل في هذا الموقع,Already assigned to this site
+REST_GAP,exclusion,فاصل الراحة أقل من {rest} ساعة,Rest gap shorter than {rest} h
+BREAKS_MINIMUM,exclusion,نقله يكسر الحد الأدنى أو متطلبات موقعه الحالي ({site}),Moving them would break the minimum at {site}

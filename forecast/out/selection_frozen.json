@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "forecast/out/f2/evaluation_report.md": "50cf84c4688888fc6c1a2b3d5e65cec990ebf8360f6033cc743a67e5e3ef097c",
+    "forecast/out/f2/metrics.csv": "0c94abde44f23a3e894f4849b49f5da5551edce86c72577ab37394aca35caa83",
+    "forecast/out/f2/predictions.csv": "0d807480fe5dc28e5f91f78c3100af8611d748d3c3815fbd663da68977742c10",
+    "forecast/out/f2/selection.json": "f940398515222f8b3266a39c133ead2f4a91b79f36fbfc9052145239ebfde56f",
+    "forecast/out/f2/threshold_sensitivity.csv": "423e7be97ed3d4ac3d68025de5d26adbf578d695464a263ba573af7889658eed",
+    "forecast/out/f3/chronos2/chronos2_predictions.csv": "ab49ff3ccf6a005d569917942505de164fc0c86e1c3eca44d70c1de3af554239",
+    "forecast/out/f3/chronos2/run_manifest.json": "c76f12d695a285338923422d26e105333eb48f40ea7c426b827b1f6b7d880ee9",
+    "forecast/out/f3/chronos2_status.json": "e6ab7715808e2833e4ea9c4ee06f037e11b626b12e02f7879c92e6934cb11812",
+    "forecast/out/f3/evaluation_report.md": "3533d585186e96fe4c0ce17f5de7151eeb187e3c4fb385b4a60ff073a9ff15c1",
+    "forecast/out/f3/exploratory.md": "ab31478a07e600c253f1991434d6c2d171d8889c9701f596d4cc2f6508879517",
+    "forecast/out/f3/metrics.csv": "4742be7f7f1b7fcb43dd9cb9700dcb61a334b2b09a62655e9a32a2c7d9f932fe",
+    "forecast/out/f3/predictions.csv": "e43893a71db3bde963c55b0b1f553abb3a4c331d3ca9802b76f42e64ac49acc3",
+    "forecast/out/f3/selection.json": "f3a590571342036d1599d6ae6674dd1efc81d410b93948def56fbe8bd4dfc0c5",
+    "forecast/out/f3/threshold_sensitivity.csv": "9b5558f3ef818f63a06b0355e46f222d606b385f25c76ccb2dc5e498642ff5f1"
+  },
+  "chronos2": {
+    "model_id": "amazon/chronos-2",
+    "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+    "spec_version": "chronos2-spec-v1",
+    "weights_sha256": "ddcda3c7508bf2528087723e98a20707cc04b7f370ae275a9fd88078ddba4f42"
+  },
+  "dataset": {
+    "path": "forecast/data/osaka_daily.csv",
+    "sha256_lf": "671818a69d2e2e4038ba6ff14b6d7389b2250cd92aaf67c3ceceb810e0de1b5d"
+  },
+  "final_origins": {
+    "2025-09-15": 155,
+    "2025-09-22": 162,
+    "2025-09-29": 169,
+    "2025-10-06": 176
+  },
+  "final_reporting_only": true,
+  "freeze_version": "f4-freeze-v1",
+  "frozen_at": "2026-10-15T00:09:17+03:00",
+  "lowest_numerical_wape": {
+    "model": "chronos2",
+    "note": "lowest WAPE but not selected: gap to seasonal_naive below 0.01; exploratory review found the gap not statistically conclusive",
+    "wape": 0.12613437303894165
+  },
+  "models_for_final_reporting": [
+    "seasonal_naive",
+    "calendar_regression",
+    "chronos2"
+  ],
+  "pinned_files": {
+    "forecast/CHRONOS2_SPEC.md": "3501335443b6d9bbcf723136b4bdb7f604a7d42a1c68dae3e9f5817b4b6659f0",
+    "forecast/EVALUATION_PROTOCOL.md": "5463a98a1b11d67e40844f8e0dd1332920b0d4f410482ead3b0aaa1799e2ee2a",
+    "forecast/data/jp_holidays_2025.csv": "0eff9cb3596423a6445fa4168fce9b567af58b108794f0bd10e2d66c8a67b981",
+    "forecast/data/osaka_daily.csv": "671818a69d2e2e4038ba6ff14b6d7389b2250cd92aaf67c3ceceb810e0de1b5d",
+    "forecast/evaluate.py": "1db8c70b360dfa30131416201821bafbf1ce1847e1b40c4a0cbd511d95e36156",
+    "forecast/features.py": "f0476dbb1d6d67f735e1e3142d1e7171741f62f67eef54b1a6c0ff9c5e7e30be",
+    "forecast/freeze.py": "e896f5e4db583551b1e7dc9233fcccf106294df2868f155bbde8885adc40b821",
+    "forecast/metrics.py": "9dc1d6bcc45a11ab8c9d43b4d467998a056eb86b9e68ea6f5534d9c32fa686b9",
+    "forecast/models/__init__.py": "a40f66962eba5ce8a565bd4e480bd78a5a82bb498587430a58cfcb484d8107ea",
+    "forecast/models/calendar_regression.py": "cd7b91a602c306fc2cf3b06af9282e3fea7e507a256abbfd9d3c8b5391fd72b1",
+    "forecast/models/chronos2.py": "74598b841bc47f48256a7d5ced9880d2d2451eb3e46d4913bea7e07f69f02a2a",
+    "forecast/models/seasonal_naive.py": "fe0cc71694903f6676c12ef7b2dd54a31a10b1c4bc246fd841760217f852eafd",
+    "forecast/run_chronos_local.py": "817a676625ea4b621b746f97ab3f973cbd6228d65788d27cc9fa5e80d3d376e1",
+    "forecast/series.py": "2687bc4c2a840148e59a535d1d49f36bcaba655b955e4cd9dd0838641c365e0e",
+    "requirements-chronos.txt": "ab318d770dea75c3c4605897059589f0885e4105bb47d71eb58ecc6e6aa04e46",
+    "requirements-forecast.txt": "5a7855aeae01396376080ca0ac184e655e20ca73b8f24b8855d3601766d71e7a"
+  },
+  "plan_protocol_discrepancy": "Approved plan: lowest WAPE; must beat seasonal_naive; if two models are within 1 point choose the simpler. Committed protocol and code: a challenger must beat seasonal_naive by >= 1 point; the lowest-WAPE challenger wins, no tie-break among challengers. Both readings select seasonal_naive on the F3 results. Neither wording is changed; the committed protocol governs.",
+  "rule": {
+    "baseline": "seasonal_naive",
+    "metric": "pooled WAPE, 14 selection folds",
+    "min_improvement": 0.01
+  },
+  "selected_model": "seasonal_naive",
+  "selection_basis": "EVALUATION_PROTOCOL.md section 5 as committed in 47b580f: pooled WAPE over the 14 selection folds; a challenger must beat seasonal_naive by >= 0.01, else seasonal_naive with status fallback_model",
+  "selection_fold_pooled_wape": {
+    "calendar_regression": 0.13553171026889707,
+    "chronos2": 0.12613437303894165,
+    "seasonal_naive": 0.12835695892856486
+  },
+  "selection_reason": "no challenger beats seasonal_naive (0.1284) by >= 0.01; best was chronos2 0.1261",
+  "statement": "Frozen before any final-test evaluation. Final-test results are for reporting only and cannot change this selection, the rule, or any model configuration.",
+  "status": "fallback_model",
+  "threshold_provenance": "design assumption proposed by Claude in the approved F0 plan; not statistically derived, not operationally validated, no cost analysis",
+  "what_this_is_not": "seasonal_naive is the model selected under the predefined protocol. It is not the most accurate model and not a proven best operational model; operational fitness has not been defined or assessed."
+}

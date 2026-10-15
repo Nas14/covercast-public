@@ -1,0 +1,48 @@
+{
+  "spec_version": "chronos2-spec-v1",
+  "stage": "final",
+  "model_id": "amazon/chronos-2",
+  "revision_requested": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "revision_used": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "weights_sha256": "ddcda3c7508bf2528087723e98a20707cc04b7f370ae275a9fd88078ddba4f42",
+  "weights_bytes": 477930472,
+  "input_file": "forecast/data/osaka_daily.csv",
+  "input_sha256_lf": "671818a69d2e2e4038ba6ff14b6d7389b2250cd92aaf67c3ceceb810e0de1b5d",
+  "folds": [
+    "2025-09-15",
+    "2025-09-22",
+    "2025-09-29",
+    "2025-10-06"
+  ],
+  "rows": 28,
+  "determinism_check": "passed",
+  "git": {
+    "commit": "99c33ac70a99a8bc7a88594063ad34aba5c66bb5",
+    "tree_clean": false,
+    "changed_tracked_files": 1,
+    "pinned_paths_clean_per_git": true
+  },
+  "load_seconds": 4.5,
+  "fold_seconds": {
+    "2025-09-15": 0.03,
+    "2025-09-22": 0.035,
+    "2025-09-29": 0.027,
+    "2025-10-06": 0.029
+  },
+  "created_at": "2026-10-14T22:59:13+00:00",
+  "environment": {
+    "python": "3.13.9",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "cpu_count": 24,
+    "numpy": "2.5.4",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.19.0",
+    "chronos": "2.3.2",
+    "huggingface_hub": "2.2.0",
+    "accelerate": "1.15.0"
+  },
+  "freeze_sha256": "20d80998a19e1035f5c29c6276162e4286f4488de55cb02cf5f06fa955911a18",
+  "pinned_check": "passed"
+}

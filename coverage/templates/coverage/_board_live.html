@@ -1,0 +1,49 @@
+{# The part of the board that the 5-second poll replaces (views.board_live). #}
+<div data-anchor="forecast">{% include "coverage/_forecast_panel.html" %}</div>
+
+<section data-anchor="decide" class="decide{% if not decisions %}{% if waiting %} waiting-only{% else %} calm{% endif %}{% endif %}" aria-labelledby="decide-h">
+  <h2 id="decide-h">{% if decisions %}يحتاج قرارك: {{ decisions_phrase }}{% elif waiting %}بانتظار {{ waiting_phrase }}{% elif no_shifts %}لا مناوبات في هذا اليوم{% else %}لا شيء ينتظر قرارك{% endif %}</h2>
+  <p class="muted">{% if not decisions and waiting %}{{ waiting_verdict }}{% else %}{{ verdict }}{% endif %}</p>
+  {% for site in decisions %}
+  <article class="gap-card {{ site.gap_nature }}" data-site="{{ site.site_code }}" data-anchor="gap-{{ site.shift_label }}-{{ site.site_code }}">
+    <header>
+      <h3>{{ site.site_name }}</h3>
+      <p class="site-meta"><span class="nature">{{ site.nature_ar }}</span>، المناوبة {{ site.shift_label }} <span dir="ltr">{{ site.start_hm }}–{{ site.end_hm }}</span>، المطلوب {{ site.required_total }} والحاضر {{ site.present }}</p>
+      {% if site.volume_reason %}<p class="why">المطلوب = {{ site.base }} حد أدنى + <bdi dir="ltr">{{ site.volume_reason.adds }}</bdi> بسبب {{ site.volume_reason.label }}</p>{% endif %}
+    </header>
+    {% include "coverage/_seats.html" %}
+    <a class="btn" href="{% url 'candidates' site.id %}?slot=1">اختر بديلًا</a>
+  </article>
+  {% endfor %}
+  {% for site in waiting %}
+  <article class="wait-card waiting" data-site="{{ site.site_code }}" data-anchor="wait-{{ site.shift_label }}-{{ site.site_code }}">
+    <header>
+      <h3>{{ site.site_name }}</h3>
+      <p class="site-meta"><span class="nature">بانتظار الرد</span>، المناوبة {{ site.shift_label }} <span dir="ltr">{{ site.start_hm }}–{{ site.end_hm }}</span>. المقعد محجوز لـ{{ site.waiting_names|join:"، " }} حتى يقبل أو يعتذر.</p>
+    </header>
+    {% include "coverage/_seats.html" %}
+  </article>
+  {% endfor %}
+</section>
+
+{% for sh in shifts %}
+<section class="shift" aria-labelledby="sh-{{ sh.slot }}" data-anchor="shift-{{ sh.slot }}">
+  <div class="shift-head">
+    <h2 id="sh-{{ sh.slot }}">المناوبة {{ sh.label_ar }}</h2>
+    <span class="hours">{{ sh.start_hm }}–{{ sh.end_hm }}</span>
+    <span class="count">{% if sh.open_count %}{{ sh.open_phrase }}{% else %}كل المواقع مغطاة{% endif %}</span>
+  </div>
+  {% for site in sh.sites %}
+  <div class="site{% if site.gap_nature %} open {{ site.gap_nature }}{% endif %}" data-site="{{ site.site_code }}" data-anchor="site-{{ sh.slot }}-{{ site.site_code }}">
+    <div class="site-id">
+      <span class="site-name">{{ site.site_name }}</span>
+      <span class="site-meta"><span class="code">{{ site.site_code }}</span>
+        <span class="importance" title="الأهمية {{ site.importance }} من 5" aria-label="الأهمية {{ site.importance }} من 5">{% for i in "12345" %}<i class="{% if forloop.counter <= site.importance %}on{% endif %}"></i>{% endfor %}</span>
+        {% if site.nature_ar %}<span class="nature">{{ site.nature_ar }}</span>{% endif %}</span>
+    </div>
+    {% include "coverage/_seats.html" %}
+    <div class="site-count">{% if site.gap_nature %}<a href="{% url 'candidates' site.id %}?slot=1">اختر بديلًا</a>{% else %}<span class="covered-mark">المطلوب {{ site.required_total }}، الحاضر {{ site.present }}</span>{% endif %}</div>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}

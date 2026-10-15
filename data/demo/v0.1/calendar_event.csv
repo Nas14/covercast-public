@@ -1,0 +1,5 @@
+﻿event_id,kind,title,country,starts_at,ends_at,source_ref
+1,national_day,اليوم الوطني لليابان - حفل الاحتفال,Japan,2026-10-12T09:00+03:00,2026-10-12T14:00+03:00,simulated
+2,delegation,وفد رسمي ياباني,Japan,2026-10-12T11:00+03:00,2026-10-12T13:00+03:00,simulated
+3,vip_visit,زيارة كبار الشخصيات,,2026-10-13T09:00+03:00,2026-10-13T11:00+03:00,simulated
+4,special,مؤتمر خاص,,2026-10-13T09:00+03:00,2026-10-13T14:00+03:00,simulated

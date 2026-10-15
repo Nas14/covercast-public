@@ -1,0 +1,9 @@
+{
+  "pooled_wape": {
+    "calendar_regression": 0.13553171026889707,
+    "seasonal_naive": 0.12835695892856486
+  },
+  "reason": "no challenger beats seasonal_naive (0.1284) by >= 0.01; best was calendar_regression 0.1355",
+  "selected": "seasonal_naive",
+  "status": "fallback_model"
+}

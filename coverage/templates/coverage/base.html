@@ -1,0 +1,49 @@
+{% load static l10n %}<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CoverCast{% endblock %}</title>
+  <link rel="icon" href="{% static 'coverage/seat.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'coverage/covercast.css' %}">
+  {% comment %}Light by default (Shahad's design). A dark choice made with the toggle is
+     remembered in this browser and applied before the first paint.{% endcomment %}
+  <script>try { if (localStorage.getItem("covercast-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+</head>
+<body>
+  {% if user.is_authenticated %}
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="{% url 'home' %}">Cover<span>Cast</span></a>
+      {% if simulated_data %}<span class="sim-badge" title="كل الأسماء والأرقام محاكاة لأغراض العرض">بيانات محاكاة</span>{% endif %}
+      <div class="who">
+        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">الوضع الداكن</button>
+        <span class="muted">{{ user.get_full_name|default:user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="linkish">خروج</button></form>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+  <main class="wrap">{% localize off %}{% block content %}{% endblock %}{% endlocalize %}</main>
+  {% if simulated_data %}<footer class="wrap sim-note">{% block sim_note %}كل الأسماء والأرقام في هذه الصفحة محاكاة لأغراض العرض، وليست بيانات تشغيل حقيقية.{% endblock %}</footer>{% endif %}
+  <script>
+  (function () {
+    var btn = document.querySelector("[data-theme-toggle]");
+    if (!btn) return;
+    var root = document.documentElement;
+    function show() {
+      var dark = root.dataset.theme === "dark";
+      btn.textContent = dark ? "الوضع الفاتح" : "الوضع الداكن";
+      btn.setAttribute("aria-pressed", dark ? "true" : "false");
+    }
+    show();
+    btn.addEventListener("click", function () {
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+      try { localStorage.setItem("covercast-theme", root.dataset.theme); } catch (e) {}
+      show();
+    });
+  })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

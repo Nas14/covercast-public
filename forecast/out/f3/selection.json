@@ -1,0 +1,11 @@
+{
+  "candidates": "Chronos-2 included (chronos2-spec-v1); comparison complete.",
+  "pooled_wape": {
+    "calendar_regression": 0.13553171026889707,
+    "chronos2": 0.12613437303894165,
+    "seasonal_naive": 0.12835695892856486
+  },
+  "reason": "no challenger beats seasonal_naive (0.1284) by >= 0.01; best was chronos2 0.1261",
+  "selected": "seasonal_naive",
+  "status": "fallback_model"
+}

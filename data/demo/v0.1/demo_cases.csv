@@ -1,0 +1,8 @@
+﻿gap_id,employee_code,name,category,expected_eligible,expected_exclusion_code,expected_rank,expected_tag,requirements_met,travel_minutes,hours_after
+G1,E061,نوره القحطاني,loan,True,,1,recommended,4/4,10,32
+G1,E012,خالد الشمري,contractor,True,,2,backup,4/4,15,48
+G1,E060,ريم العنزي,volunteer,False,CERT_EXPIRED,,,3/4,,
+G1,E053,احمد الدوسري,loan,False,SCOPE_OUT,,,4/4,,
+G1,E068,بندر الهاجري,contractor,True,,3,,3/4,5,32
+G1,E026,أريج اليامي,contractor,True,,4,,3/4,15,32
+G1,E005,ياسر الهاجري,contractor,True,,5,,1/4,5,40

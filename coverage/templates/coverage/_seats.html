@@ -1,0 +1,28 @@
+<ul class="seats" aria-label="مقاعد {{ site.site_name }}: المطلوب {{ site.required_total }}، الحاضر {{ site.present }}">
+  {% for seat in site.seats %}
+    {% if seat.kind == "open" %}
+    <li class="seat open">
+      <a href="{% url 'candidates' site.id %}?slot={{ seat.slot }}">
+        <span class="needs">{% if seat.must_have_ar %}{{ seat.must_have_ar|join:" + " }}{% else %}أي شخص مؤهل{% endif %}</span>
+        <span class="state">مقعد فارغ</span>
+      </a>
+    </li>
+    {% else %}
+    <li class="seat {{ seat.kind }}">
+      {% if seat.can_report %}
+      <details>
+        <summary><span class="who-name">{{ seat.name }}</span>{% if seat.kind == "awaiting" %}<span class="state">بانتظار الرد</span>{% endif %}</summary>
+        <div class="absence-menu" role="group" aria-label="تسجيل غياب {{ seat.name }}">
+          <button class="linkish" data-absence="{% url 'api-absence' seat.assignment_id %}" data-kind="no_show" data-name="{{ seat.name }}">عدم حضور</button>
+          <button class="linkish" data-absence="{% url 'api-absence' seat.assignment_id %}" data-kind="sick" data-name="{{ seat.name }}">إجازة مرضية</button>
+          <button class="linkish" data-absence="{% url 'api-absence' seat.assignment_id %}" data-kind="leave" data-name="{{ seat.name }}">إجازة</button>
+        </div>
+      </details>
+      {% else %}
+      <span class="who-name">{{ seat.name }}</span>
+      {% if seat.kind == "absent" %}<span class="state">غياب مسجّل، لا يُحسب</span>{% elif seat.kind == "awaiting" %}<span class="state">بانتظار الرد</span>{% endif %}
+      {% endif %}
+    </li>
+    {% endif %}
+  {% endfor %}
+</ul>

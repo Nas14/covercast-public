@@ -1,0 +1,5 @@
+﻿event_id,kind,title,country,starts_at,ends_at,source_ref
+1,national_day,اليوم الوطني لليابان - حفل الاحتفال,Japan,2030-10-14T09:00+03:00,2030-10-14T14:00+03:00,simulated
+2,delegation,وفد رسمي ياباني,Japan,2030-10-14T11:00+03:00,2030-10-14T13:00+03:00,simulated
+3,vip_visit,زيارة كبار الشخصيات,,2030-10-15T09:00+03:00,2030-10-15T11:00+03:00,simulated
+4,special,مؤتمر خاص,,2030-10-15T09:00+03:00,2030-10-15T14:00+03:00,simulated

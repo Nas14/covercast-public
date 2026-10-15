@@ -1,0 +1,9 @@
+{% extends "coverage/base.html" %}
+{% block title %}{{ title }} | CoverCast{% endblock %}
+{% block content %}
+<section class="single">
+  <h1>{{ title }}</h1>
+  <p class="muted">{{ text }}</p>
+  <div class="actions"><a class="btn quiet" href="{{ back|default:'/' }}">العودة إلى اللوحة</a></div>
+</section>
+{% endblock %}

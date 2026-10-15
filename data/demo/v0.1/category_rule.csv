@@ -1,0 +1,4 @@
+﻿category,max_weekly_hours,min_rest_hours,enforce_zone_scope,note
+loan,48,11,true,الإعارة محصورة في loan_scope_zones (افتراض)
+contractor,48,11,false,افتراض
+volunteer,30,11,false,افتراض

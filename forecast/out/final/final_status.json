@@ -1,0 +1,20 @@
+{
+  "chronos2": {
+    "chronos2": "included",
+    "comparison": "complete",
+    "environment": {
+      "chronos": "2.3.2",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "python": "3.13.9",
+      "torch": "2.14.1+cpu"
+    },
+    "freeze_sha256": "20d80998a19e1035f5c29c6276162e4286f4488de55cb02cf5f06fa955911a18",
+    "git_commit": "99c33ac70a99a8bc7a88594063ad34aba5c66bb5",
+    "revision_used": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+    "weights_sha256": "ddcda3c7508bf2528087723e98a20707cc04b7f370ae275a9fd88078ddba4f42"
+  },
+  "final_reporting_only": true,
+  "freeze_sha256": "20d80998a19e1035f5c29c6276162e4286f4488de55cb02cf5f06fa955911a18",
+  "frozen_selection": "seasonal_naive",
+  "frozen_status": "fallback_model"
+}

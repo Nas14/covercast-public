@@ -1,0 +1,17 @@
+﻿code,name_ar,name_en,kind
+adv_first_aid,إسعاف أولي متقدم,Advanced First Aid,certification
+basic_first_aid,إسعاف أولي أساسي,Basic First Aid,certification
+security_license,ترخيص أمني,Security License,certification
+fire_safety,السلامة من الحريق,Fire Safety,certification
+crowd_control,إدارة الحشود,Crowd Control,certification
+paramedic,مسعف,Paramedic,role
+security_guard,حارس أمن,Security Guard,role
+visitor_services,خدمة الزوار,Visitor Services,role
+facility_tech,فني مرافق,Facility Technician,role
+ar,العربية,Arabic,language
+en,الإنجليزية,English,language
+ja,اليابانية,Japanese,language
+zh,الصينية,Chinese,language
+fr,الفرنسية,French,language
+es,الإسبانية,Spanish,language
+ko,الكورية,Korean,language

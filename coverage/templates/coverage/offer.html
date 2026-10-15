@@ -1,0 +1,31 @@
+{% extends "coverage/base.html" %}
+{% block title %}طلب تغطية | CoverCast{% endblock %}
+{% block content %}
+<section class="single">
+  <p class="brand">Cover<span>Cast</span></p>
+  {% if error %}
+    <h1>{{ error.message_ar }}</h1>
+    <p class="muted">إن كنت تتوقع طلبًا قائمًا، تواصل مع مشرفك ليرسل لك رابطًا جديدًا.</p>
+    <p class="code" data-code="{{ error.code.value }}">{{ error.code.value }}</p>
+  {% else %}
+    <h1>مرحبًا {{ first_name }}</h1>
+    <p>يحتاجك مشرفك في:</p>
+    <div class="offer-seat">
+      <b>{{ a.site.name }}</b>
+      <span>المناوبة {{ a.shift.get_slot_display }}، {{ a.shift.date|date:"l j F Y" }}<br><bdi dir="ltr">{{ starts|time:"H:i" }}–{{ ends|time:"H:i" }}</bdi></span>
+    </div>
+    {% if a.moved_from %}<p class="muted">ستنتقل من {{ a.moved_from.site.name }}. إن اعتذرت تبقى في موقعك كما كنت.</p>{% endif %}
+    {% if outcome %}
+      <p class="done{% if not outcome.accepted %} declined{% endif %}" data-result="{{ a.status }}" role="status">
+        {% if outcome.accepted %}تم تأكيد حضورك. شكرًا لك.{% else %}سُجّل اعتذارك.{% if outcome.restored_site %} تبقى في {{ a.moved_from.site.name }}.{% endif %}{% endif %}</p>
+    {% elif open %}
+      <form method="post" class="actions">{% csrf_token %}
+        <button class="btn" name="action" value="accept">أقبل التكليف</button>
+        <button class="btn quiet" name="action" value="decline">أعتذر</button>
+      </form>
+    {% else %}
+      <p class="done{% if a.status != 'confirmed' %} declined{% endif %}" data-result="{{ a.status }}">{% if a.status == "confirmed" %}أكدت حضورك لهذا التكليف.{% else %}هذا الطلب لم يعد قائمًا.{% endif %}</p>
+    {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

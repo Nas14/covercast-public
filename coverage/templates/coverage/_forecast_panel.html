@@ -1,0 +1,45 @@
+{% if forecast %}
+<section class="pressure lvl-{{ forecast.level }} {{ forecast.mode }}" aria-labelledby="pressure-h" data-level="{{ forecast.level }}" data-mode="{{ forecast.mode }}">
+  <div class="pressure-head">
+    <h2 id="pressure-h">ضغط الزوار: <strong>{{ forecast.level_ar }}</strong></h2>
+    <ol class="meter" aria-label="المستوى {{ forecast.level_ar }}، من ثلاثة: عادي ثم مرتفع ثم ذروة">
+      {% for m in forecast.meter %}<li class="{% if m.on %}on{% endif %}{% if m.current %} current{% endif %}">{{ m.label }}</li>{% endfor %}
+    </ol>
+  </div>
+  <p class="provenance"><span class="tag">{% if forecast.mode == "riyadh_scenario" %}سيناريو محاكى، ليس تنبؤًا{% else %}بيانات رسمية · أوساكا 2025{% endif %}</span> {{ forecast.provenance_ar }}</p>
+
+  {% with v=forecast.visitors %}{% if v %}
+  <figure class="range">
+    <div class="track" aria-hidden="true">
+      <span class="zone z-normal" style="inset-inline-start:0;inset-inline-end:calc(100% - {{ v.bar.high }}%)"><em>عادي</em></span>
+      <span class="zone z-high" style="inset-inline-start:{{ v.bar.high }}%;inset-inline-end:calc(100% - {{ v.bar.peak }}%)"><em>مرتفع</em></span>
+      <span class="zone z-peak" style="inset-inline-start:{{ v.bar.peak }}%;inset-inline-end:0"><em>ذروة</em></span>
+      <span class="band" style="inset-inline-start:{{ v.bar.p10 }}%;inset-inline-end:calc(100% - {{ v.bar.p90 }}%)"></span>
+      <span class="mark p50" style="inset-inline-start:{{ v.bar.p50 }}%"></span>
+      <span class="mark actual" style="inset-inline-start:{{ v.bar.actual }}%"></span>
+    </div>
+    <figcaption>
+      <span><i class="key p50"></i>المتوقع <b dir="ltr">{{ v.fmt.p50 }}</b> زائر</span>
+      <span><i class="key band"></i>نطاق 80%: <span dir="ltr">{{ v.fmt.p10 }}–{{ v.fmt.p90 }}</span></span>
+      <span><i class="key actual"></i>الفعلي <b dir="ltr">{{ v.fmt.actual }}</b> ({{ v.actual_level_ar }})، والفرق <bdi dir="ltr">{{ v.error_pct }}%</bdi></span>
+    </figcaption>
+    <p class="faint small">صدر التوقع بتاريخ <span dir="ltr">{{ v.as_of }}</span>، قبل {{ v.horizon_phrase }}. حدود المستوى محسوبة من بيانات حتى ذلك التاريخ فقط: مرتفع من <span dir="ltr">{{ v.fmt.threshold_high }}</span>، وذروة من <span dir="ltr">{{ v.fmt.threshold_peak }}</span>.</p>
+  </figure>
+  {% endif %}{% endwith %}
+
+  <div class="effect">
+    {% if forecast.effect_rows %}
+    <p class="effect-sum">{% if forecast.applies %}أثره على الاحتياج: <b><bdi dir="ltr">+{{ forecast.total_added }}</bdi></b> في {{ forecast.sites_phrase }}{% else %}للتوضيح فقط: لو طُبّق هذا المستوى على مواقع العرض المحاكاة لأضاف <b><bdi dir="ltr">+{{ forecast.total_added }}</bdi></b> في {{ forecast.sites_phrase }}. لا مناوبات في هذا اليوم، فلا يتغير أي احتياج.{% endif %}</p>
+    <table class="effect-table">
+      <thead><tr><th scope="col">الفئة</th><th scope="col">لكل موقع</th><th scope="col">المواقع</th><th scope="col">المجموع</th></tr></thead>
+      <tbody>{% for c in forecast.effect_rows %}<tr><th scope="row">{{ c.category_ar }}</th><td><bdi dir="ltr">+{{ c.extra_staff_per_site }}</bdi></td><td dir="ltr" class="code">{{ c.sites_phrase }}</td><td><bdi dir="ltr">+{{ c.total }}</bdi></td></tr>{% endfor %}</tbody>
+    </table>
+    {% elif not forecast.rules_loaded %}
+    <p class="effect-sum muted">لا توجد قواعد احتياج محمّلة، فلا يضيف المستوى أفرادًا.</p>
+    {% else %}
+    <p class="effect-sum muted">هذا المستوى لا يضيف أفرادًا إلى أي موقع.</p>
+    {% endif %}
+    <p class="faint small">قيم الزيادة افتراضات محاكاة لنموذج العرض، وليست معيار توظيف رسميًا.</p>
+  </div>
+</section>
+{% endif %}

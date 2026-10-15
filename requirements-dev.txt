@@ -1,0 +1,4 @@
+# Optional: the browser test of the demo story (coverage/tests/test_e2e_browser.py).
+# Without it that one test is skipped; everything else runs.
+-r requirements.txt
+playwright==1.56.0

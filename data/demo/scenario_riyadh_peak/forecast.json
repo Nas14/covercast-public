@@ -1,0 +1,14 @@
+{
+  "format": "covercast-forecast-v1",
+  "run": {
+    "code": "riyadh-scenario-peak-2030-10-24",
+    "mode": "riyadh_scenario",
+    "model": "scenario_assumption",
+    "data_origin": "simulated",
+    "level_method": "Set explicitly to peak as a simulated scenario assumption (approved by Nouf on 2026-10-15). Not produced by any model; no visitor numbers; no accuracy is claimed.",
+    "note": "Simulated Riyadh Expo 2030 scenario. Not a forecast of actual Riyadh 2030 attendance."
+  },
+  "days": [
+    {"date": "2030-10-24", "level": "peak"}
+  ]
+}

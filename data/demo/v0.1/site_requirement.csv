@@ -1,0 +1,24 @@
+﻿site_code,skill_code,min_count,event_id,note
+S01,adv_first_aid,1,,أساسي
+S01,paramedic,1,,أساسي
+S02,adv_first_aid,1,,أساسي
+S02,paramedic,1,,أساسي
+S03,adv_first_aid,1,,أساسي
+S03,paramedic,1,,أساسي
+S04,security_license,1,,أساسي
+S04,crowd_control,1,,أساسي
+S05,security_license,1,,أساسي
+S06,security_license,2,,أساسي
+S07,en,1,,أساسي
+S08,visitor_services,1,,أساسي
+S08,en,1,,أساسي
+S09,visitor_services,1,,أساسي
+S09,en,1,,أساسي
+S10,crowd_control,1,,أساسي
+S11,fire_safety,1,,أساسي
+S12,adv_first_aid,1,,أساسي
+S12,paramedic,1,,أساسي
+S03,ja,1,1,مضاف بحدث: اليوم الوطني لليابان - حفل الاحتفال
+S08,ja,1,2,مضاف بحدث: وفد رسمي ياباني
+S04,security_license,2,3,مضاف بحدث: زيارة كبار الشخصيات
+S09,en,2,4,مضاف بحدث: مؤتمر خاص

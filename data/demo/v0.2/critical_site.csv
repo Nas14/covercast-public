@@ -1,0 +1,13 @@
+﻿site_code,name,zone,min_staff_required,site_type,importance_1_5
+S01,نقطة الإسعاف 1,A,2,medical,5
+S02,نقطة الإسعاف 2,B,2,medical,5
+S03,نقطة الإسعاف 3 - بجوار الجناح الياباني,C,2,medical,5
+S04,البوابة الرئيسية,A,4,security_gate,4
+S05,البوابة الشمالية,B,3,security_gate,4
+S06,نقطة التفتيش الأمني,A,3,security_gate,4
+S07,مركز العمليات,D,2,operations,3
+S08,مدخل الوفود الرسمية,C,3,visitor_service,3
+S09,مركز خدمة الزوار,D,2,visitor_service,3
+S10,محطة النقل والمكوكات,E,3,crowd,3
+S11,مخرج الطوارئ الشرقي,E,1,safety,3
+S12,المركز الطبي,D,4,medical,5
