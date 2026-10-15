@@ -31,6 +31,10 @@ except ImportError:  # optional dependency (requirements-dev.txt)
     sync_playwright = None
 
 
+
+# Round 5: a gap is a site card in the open state (the separate gap cards are gone).
+GAP = "#board-live .site[data-state='open']"
+
 class DemoStoryInABrowser(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -87,12 +91,18 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
 
         # 1. Monday: G1 is the only thing that needs a decision
         p.goto(self.live_server_url + "/board?date=2030-10-14")
-        self.assertEqual(p.inner_text(".decide h2"), "يحتاج قرارك: فجوة واحدة")
-        self.assertIn("إسعاف أولي متقدم + اليابانية + مسعف", p.inner_text(".gap-card .seat.open"))
+        # (round 5: the gap is its site card; the KPI tile is the way down to it)
+        self.assertEqual(p.locator(GAP).count(), 1)
+        self.assertEqual(p.locator(".decide").count(), 0)                 # nothing waits for an answer yet
+        self.assertEqual(p.inner_text(GAP + " .seat.open .needs").split(), ["إسعاف", "أولي", "متقدم", "اليابانية", "مسعف"])
+        self.assertEqual(p.locator(GAP + " a").count(), 1)                # one way in: «اختر بديلًا»
         self.assertTrue(p.evaluate("document.fonts.check('16px \"Plex Arabic\"')"))
+        p.click("[data-jump-gaps]")
+        self.assertEqual(p.get_attribute("[data-filter='open']", "aria-pressed"), "true")
+        self.assertTrue(p.locator("#panel-morning .site[data-site='S12']").is_hidden())   # only the gaps now
 
         # 2. Candidates: Noura first, the comparison line, the 78 excluded
-        p.click(".gap-card a.btn")
+        p.click(GAP + " a.btn")
         p.wait_for_load_state("networkidle")
         self.assertEqual(p.inner_text("li.person.top .score b"), "60.83")
         self.assertIn("ونقله يُنقص البوابة الشمالية شخصًا واحدًا", p.inner_text(".versus"))
@@ -116,6 +126,7 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         p.click("dialog[open] [data-confirm-approve]")
         p.wait_for_selector("li.person.top .result:not([hidden])")
         self.assertIn("تم اعتماد نوره", p.inner_text("li.person.top .result"))
+        self.assertEqual(p.inner_text("[data-stepper] [aria-current=step]"), "رد الموظف")   # the journey moved on
         p.evaluate(f"document.querySelector('{approve}').disabled = false")
         p.click(approve)
         p.click("dialog[open] [data-confirm-approve]")
@@ -135,21 +146,27 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
 
         # 5. Back on the board: G1 closed; a live absence opens a red gap at S01
         p.goto(self.live_server_url + "/board?date=2030-10-14")
-        self.assertEqual(p.inner_text(".decide h2"), "لا شيء ينتظر قرارك")
+        p.click("[data-filter='all']")
+        self.assertEqual(p.locator(GAP).count(), 0)
+        self.assertEqual(p.locator(".decide").count(), 0)
         seat = p.locator(".shift .site[data-site='S01'] .seat details").first
         seat.locator("summary").click()
         with p.expect_navigation():
             seat.locator("button[data-kind='no_show']").click()
-        self.assertIn("فجوة مؤكدة", p.inner_text(".gap-card"))
-        self.assertIn("مسعف", p.inner_text(".gap-card .seat.open"))
+        self.assertIn("فجوة مؤكدة", p.inner_text(GAP))
+        self.assertIn("مسعف", p.inner_text(GAP + " .seat.open"))
 
-        # 6. Tuesday on a phone: G2 is the first thing on the screen
+        # 6. Tuesday on a phone: the gap count and the way to it are on the first screen,
+        #    one tap away from G2 (round 5: no separate gap cards above the sites)
         mobile = self.page(viewport={"width": 390, "height": 844}, storage_state=p.context.storage_state())
         mobile.goto(self.live_server_url + "/board?date=2030-10-15")
-        box = mobile.locator(".gap-card").bounding_box()
-        self.assertLess(box["y"], 844, "G2 must be visible without scrolling on a phone")
-        self.assertIn("إدارة الحشود", mobile.inner_text(".gap-card"))
-        mobile.click(".gap-card a.btn")
+        self.assertLess(mobile.locator("[data-jump-gaps]").bounding_box()["y"], 844, "visible without scrolling")
+        mobile.click("[data-jump-gaps]")
+        mobile.wait_for_timeout(800)
+        box = mobile.locator(GAP).first.bounding_box()
+        self.assertTrue(0 <= box["y"] < 844, "one tap brings G2 on screen")
+        self.assertIn("إدارة الحشود", mobile.inner_text(GAP))
+        mobile.click(GAP + " a.btn")
         mobile.wait_for_load_state("networkidle")
         self.assertIn("غادة السبيعي", mobile.inner_text("li.person.top h3"))
 
@@ -175,13 +192,13 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         self.assertNotIn("زائر", panel)                      # no visitor number for a scenario
 
         # 2-3. The requirement and the one gap it creates, with its reason
-        self.assertEqual(p.inner_text(".decide h2"), "يحتاج قرارك: فجوة واحدة")
-        card = p.inner_text(".gap-card")
+        self.assertEqual(p.locator(GAP).count(), 1)
+        card = p.inner_text(GAP)
         self.assertIn("محطة النقل والمكوكات", card)
-        self.assertIn("المطلوب = 3 حد أدنى + 1", card)
+        self.assertIn("المطلوب 3 حد أدنى + 1", card)
 
         # 4. Ranked, explained replacements
-        p.click(".gap-card a.btn")
+        p.click(GAP + " a.btn")
         p.wait_for_load_state("networkidle")
         self.assertEqual(p.inner_text("li.person.top .score b"), "80.83")
         self.assertIn("ضغط الزوار: ذروة", p.inner_text("main"))
@@ -198,7 +215,8 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
 
         # 7. Updated coverage status
         p.goto(self.live_server_url + "/board?date=2030-10-24")
-        self.assertEqual(p.inner_text(".decide h2"), "لا شيء ينتظر قرارك")
+        self.assertEqual(p.locator(GAP).count(), 0)
+        self.assertEqual(p.locator(".decide").count(), 0)
         self.assertEqual(Assignment.objects.get(origin="replacement").employee.code, "E066")
 
         # Osaka replay: official, compared with the actual, and changes no shift
@@ -237,7 +255,7 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         sup = self.page(viewport={"width": 1280, "height": 900})
         self.sign_in(sup)
         sup.goto(board_url)
-        self.assertEqual(sup.inner_text(".decide h2"), "يحتاج قرارك: فجوة واحدة")
+        self.assertEqual(sup.locator(GAP).count(), 1)
         sup.evaluate("window.__sameDocument = 'yes'")          # gone if the page ever reloads
         polls = self.live_requests(sup)
 
@@ -251,16 +269,16 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         tab = sup.context.new_page()
         tab.on("dialog", lambda dlg: dlg.accept())
         tab.goto(board_url)
-        tab.click(".gap-card a.btn")
+        tab.click(GAP + " a.btn")
         tab.wait_for_load_state("networkidle")
         self.approve_top(tab)
         offer_url = tab.input_value("li.person.top .offer-link input")
         tab.close()
 
         # The watched board drops the gap by itself: the seat is held for E066.
-        sup.wait_for_function("!document.querySelector('#board-live .gap-card')", timeout=12000)
+        sup.wait_for_function("!document.querySelector(\"%s\")" % GAP, timeout=12000)
         self.assertIn("بانتظار الرد", sup.inner_text("#board-live .site[data-site='S10']"))
-        self.assertEqual(sup.inner_text(".decide h2"), "بانتظار ردّ واحد")       # the design's blue state
+        self.assertEqual(sup.inner_text(".decide h2"), "بانتظار رد الموظف: طلب واحد")   # the design's blue state
         self.assertIn("ليلى اليامي", sup.inner_text("#board-live .wait-card[data-site='S10']"))
 
         # 2. The employee, in a separate browser session with no account, accepts.
@@ -273,7 +291,7 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         sup.wait_for_function(
             "!document.querySelector(\"#board-live .site[data-site='S10']\").innerText.includes('بانتظار الرد')",
             timeout=12000)
-        self.assertEqual(sup.inner_text(".decide h2"), "لا شيء ينتظر قرارك")
+        sup.wait_for_function("!document.querySelector('#board-live .decide')", timeout=12000)   # nothing waits
         self.assertIn("ليلى اليامي", sup.inner_text("#board-live .site[data-site='S10']"))
         self.assertEqual(sup.evaluate("window.__sameDocument"), "yes")
         top_after = sup.evaluate(f"document.querySelector(\"{row}\").getBoundingClientRect().top")
@@ -301,10 +319,11 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
                                reported_at=shift.starts_at)
         sup.wait_for_timeout(7000)
         self.assertTrue(sup.evaluate(f"document.querySelector(\"{menu}\").open"), "the open menu must stay open")
-        self.assertEqual(sup.locator("#board-live .gap-card[data-site='S05']").count(), 0)
+        self.assertEqual(sup.locator("#board-live .site[data-site='S05'][data-state='open']").count(), 0)
         sup.locator(menu).first.locator("summary").click()      # close it
         # S05 needs 5 at peak and now has 4, still above its base of 3: an anticipated gap
-        sup.wait_for_function("document.querySelector(\"#board-live .gap-card[data-site='S05']\")", timeout=12000)
+        sup.wait_for_function("document.querySelector(\"#board-live .site[data-site='S05'][data-state='open']\")",
+                              timeout=12000)
         self.assertEqual(sup.evaluate("window.__sameDocument"), "yes")
 
         # 6. Network down: a calm message and retries; back up: it recovers on its own.
@@ -320,6 +339,38 @@ class DemoStoryInABrowser(StaticLiveServerTestCase):
         self.assertIn("انتهت الجلسة", sup.inner_text("[data-live-status]"))
         self.assertNotIn("دخول المشرف", sup.inner_text("#board-live"))
         self.assertEqual(sup.external + phone.external, [])
+
+    def test_tab_and_filter_survive_a_live_update(self):
+        """The reader's shift tab and filter are theirs: a 5-second update never resets them."""
+        from workforce.models import Absence
+        from coverage.models import Shift
+
+        p = self.page(viewport={"width": 1280, "height": 900})
+        self.sign_in(p)
+        p.goto(self.live_server_url + "/board?date=2030-10-15")
+        self.assertEqual(p.get_attribute("[data-tab='evening']", "aria-selected"), "true")   # G2 is in the evening
+        p.click("[data-tab='morning']")
+        p.click("[data-filter='covered']")
+        self.assertTrue(p.is_visible("#panel-morning"))
+        self.assertFalse(p.is_visible("#panel-evening"))
+        p.evaluate("window.__sameDocument = 'yes'")
+
+        # Something changes in the morning: S04 loses a person and becomes a gap.
+        shift = Shift.objects.get(date="2030-10-15", slot="morning")
+        emp = shift.assignments.filter(site__code="S04").first().employee
+        Absence.objects.create(employee=emp, kind="sick", starts_at=shift.starts_at, ends_at=shift.ends_at,
+                               reported_at=shift.starts_at)
+        p.wait_for_function("document.querySelector('[data-live-status]').dataset.state === 'updated'", timeout=12000)
+        self.assertEqual(p.evaluate("window.__sameDocument"), "yes")
+        self.assertEqual(p.get_attribute("[data-tab='morning']", "aria-selected"), "true")
+        self.assertEqual(p.get_attribute("[data-filter='covered']", "aria-pressed"), "true")
+        self.assertTrue(p.locator("#panel-morning .site[data-site='S04']").is_hidden(), "a gap is not 'covered'")
+        self.assertEqual(p.locator("#panel-morning .site[data-site='S04'][data-state='open']").count(), 1)   # a gap now
+        p.click("[data-filter='open']")
+        self.assertTrue(p.locator("#panel-morning .site[data-site='S04']").is_visible())
+        p.reload()
+        self.assertEqual(p.get_attribute("[data-tab='morning']", "aria-selected"), "true", "kept for this tab")
+        self.assertEqual(p.external, [])
 
     # ------------------------------------------------------------------ theme
     def test_light_by_default_even_on_a_dark_system_and_the_toggle_remembers(self):

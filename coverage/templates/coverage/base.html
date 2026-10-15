@@ -7,18 +7,26 @@
   <link rel="icon" href="{% static 'coverage/seat.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'coverage/covercast.css' %}">
   {% comment %}Light by default (Shahad's design). A dark choice made with the toggle is
-     remembered in this browser and applied before the first paint.{% endcomment %}
-  <script>try { if (localStorage.getItem("covercast-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+     remembered in this browser and applied before the first paint. The "js" class turns on
+     the parts that need the script (shift tabs, filters); without it everything is shown.{% endcomment %}
+  <script>document.documentElement.classList.add("js"); try { if (localStorage.getItem("covercast-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
 </head>
 <body>
   {% if user.is_authenticated %}
   <header class="top">
     <div class="wrap">
-      <a class="brand" href="{% url 'home' %}">Cover<span>Cast</span></a>
+      <a class="brand" href="{% url 'home' %}" aria-label="CoverCast، لوحة اليوم">
+        <svg viewBox="0 0 22 22" aria-hidden="true"><rect x="1" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="1" y="8.25" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="8.25" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="8.25" width="5.5" height="5.5" rx="1.5" style="fill:var(--brand)"/><rect x="1" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/></svg>
+        <span>Cover<span>Cast</span></span></a>
+      <nav class="app-nav" aria-label="الأقسام">
+        <a href="{% url 'home' %}"{% if nav_page == "board" %} aria-current="page"{% endif %}>لوحة اليوم</a>
+        <a href="{% url 'requests' %}"{% if nav_page == "requests" %} aria-current="page"{% endif %}>الطلبات</a>
+      </nav>
       {% if simulated_data %}<span class="sim-badge" title="كل الأسماء والأرقام محاكاة لأغراض العرض">بيانات محاكاة</span>{% endif %}
       <div class="who">
         <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">الوضع الداكن</button>
-        <span class="muted">{{ user.get_full_name|default:user.username }}</span>
+        <span class="avatar" aria-hidden="true">{{ user.get_full_name|default:user.username|slice:":1" }}</span>
+        <span class="name muted">{{ user.get_full_name|default:user.username }}</span>
         <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="linkish">خروج</button></form>
       </div>
     </div>

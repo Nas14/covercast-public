@@ -23,14 +23,14 @@ from django.views.decorators.http import require_http_methods
 from coverage import policy
 from coverage.api import serializers as S
 from coverage.api.views import is_supervisor
-from coverage.codes import AssignmentStatus, ErrorCode, ExclusionCode
-from coverage.models import Assignment, CoverageRequirement, Shift
+from coverage.codes import AssignmentOrigin, AssignmentStatus, AttendanceLevel, ErrorCode, ExclusionCode, ForecastMode
+from coverage.models import AttendanceForecast, Assignment, CalendarEvent, CoverageRequirement, Shift
 from coverage.services import snapshot
 from coverage.services.board import board_version, day_board
 from coverage.services.errors import CoverCastError
 from coverage.services.evaluation import SlotNotOpen, evaluate_slot
 from coverage.services.forecast_view import LEVELS, day_forecast
-from coverage.services.offers import read_token, respond
+from coverage.services.offers import offer_expires_at, offer_token, read_token, respond
 from coverage.services.reasons import counted, minutes_phrase
 from workforce.models import CategoryRule
 
@@ -93,6 +93,83 @@ def _site_order(site: dict):
     return (rank, -site["importance"], site["site_code"])
 
 
+def _card(site: dict) -> None:
+    """What a site card draws, from the same dict (no new facts): seats filled
+    out of seats needed, the open or surplus count, and the filter state."""
+    seats = site["seats"]
+    filled = sum(s["kind"] in ("present", "awaiting") for s in seats)
+    open_n = sum(s["kind"] == "open" for s in seats)
+    waiting = sum(s["kind"] == "awaiting" for s in seats)
+    target = filled + open_n if open_n else site["required_total"]
+    site["filled"], site["open_n"], site["target"] = filled, open_n, target
+    site["surplus"] = max(0, filled - target)
+    site["fill_pct"] = round(100 * min(filled, target) / target) if target else 100
+    site["state"] = "open" if open_n else ("waiting" if waiting else "covered")
+    site["waiting_n"] = waiting
+
+
+def _gap_reasons(site: dict) -> list[str]:
+    """Why this seat is empty, in words, from the drivers and the seats (no new facts)."""
+    out = []
+    absent = [s["name"] for s in site["seats"] if s["kind"] == "absent"]
+    if absent:
+        out.append("غياب مسجّل: " + "، ".join(absent))
+    out += [d["label"] for d in site["drivers"] if d["kind"] in ("event", "fallback") and (d["adds"] or d["skills"])]
+    # the visitor-pressure reason has its own line on the card ("المطلوب = ... بسبب ...")
+    return out
+
+
+def _top_candidate(requirement_id: int) -> dict | None:
+    """A preview of the first-ranked person for slot 1, for the board's gap card.
+
+    The same evaluation as the candidates page, with persist=False: no audit rows,
+    so the session report (time from opening the candidates page) is unchanged.
+    """
+    req = CoverageRequirement.objects.select_related("site", "shift").filter(pk=requirement_id).first()
+    if req is None:
+        return None
+    try:
+        result = evaluate_slot(req.site, req.shift, 1, persist=False)
+    except SlotNotOpen:
+        return None
+    total = len(result.ranked) + len(result.excluded)
+    top = result.ranked[0] if result.ranked else None
+    return {"name": top.name if top else None, "score": f"{top.score:.2f}" if top else None,
+            "eligible": len(result.ranked), "evaluated": total,
+            "eligible_phrase": counted(len(result.ranked), "مؤهل واحد", "مؤهلان", "مؤهلين", "مؤهلًا")}
+
+
+def _offer_link(request, a: Assignment, now) -> dict:
+    """The employee's link again, for a request still waiting: same window as the
+    first one (approval + max age, see offers.offer_token), or why it is gone."""
+    expires = offer_expires_at(a)
+    if expires is None or now >= expires or now >= a.shift.ends_at:
+        return {"url": None, "expires": None}
+    url = request.build_absolute_uri(reverse("offer", args=[offer_token(a, signed_at=a.approved_at)]))
+    return {"url": url, "expires": timezone.localtime(min(expires, a.shift.ends_at))}
+
+
+def _day_strip(days: list, current: date) -> list[dict]:
+    """The shift days as tabs: date, and what is known about each day (calendar
+    events and the visitor-pressure level), read from the data. Gap counts are
+    NOT shown here: they need the engine for every day (the board shows them)."""
+    events: dict = {}
+    for e in CalendarEvent.objects.order_by("starts_at"):
+        d = timezone.localtime(e.starts_at).date()
+        if d in days and e.title not in events.setdefault(d, []):
+            events[d].append(e.title)
+    levels = dict(AttendanceForecast.objects.filter(date__in=days, run__is_active=True,
+                                                    run__mode=ForecastMode.RIYADH_SCENARIO)
+                  .values_list("date", "level"))
+    out = []
+    for d in days:
+        notes = list(events.get(d, []))
+        if d in levels:
+            notes.append(f"مستوى الزوار {AttendanceLevel(levels[d]).label} (سيناريو محاكى)")
+        out.append({"date": d, "current": d == current, "notes": notes})
+    return out
+
+
 @supervisor_page
 def home(request):
     days = list(Shift.objects.order_by("date").values_list("date", flat=True).distinct())
@@ -112,8 +189,10 @@ def board(request):
     except ValueError:
         return redirect("home")
     version = board_version(day)          # before the context: it never reads the snapshots it writes
-    ctx = _board_context(day)
-    ctx.update(live_version=version, poll_ms=getattr(settings, "COVERCAST_BOARD_POLL_MS", 5000))
+    ctx = _board_context(day, request)
+    days = ctx.pop("shift_days")
+    ctx.update(live_version=version, poll_ms=getattr(settings, "COVERCAST_BOARD_POLL_MS", 5000),
+               day_strip=_day_strip(days, day) if day in days else None, nav_page="board")
     return render(request, "coverage/board.html", ctx)
 
 
@@ -140,13 +219,13 @@ def board_live(request):
     headers = {"X-Board-Version": version, "Cache-Control": "no-store"}
     if request.GET.get("v") == version:
         return HttpResponse(status=204, headers=headers)
-    response = render(request, "coverage/_board_live.html", _board_context(day))
+    response = render(request, "coverage/_board_live.html", _board_context(day, request))
     for k, v in headers.items():
         response[k] = v
     return response
 
 
-def _board_context(day: date) -> dict:
+def _board_context(day: date, request=None) -> dict:
     """Everything the board shows for `day`: the full page and the live fragment share it."""
     days = list(Shift.objects.order_by("date").values_list("date", flat=True).distinct())
     data = S.board_json(day, day_board(day), snapshot.skill_names())
@@ -162,10 +241,16 @@ def _board_context(day: date) -> dict:
             site["seats"] = _seats(site, ended)
             site["nature_ar"] = NATURE_AR.get(site["gap_nature"])
             site["volume_reason"] = next((d for d in site["drivers"] if d["kind"] == "forecast"), None)
+            _card(site)
         open_sites = [s for s in sites if s["gap_nature"]]
         for s in open_sites:
+            # the gap's details live on its site card (round 5: no separate gap cards)
+            s["reasons"] = _gap_reasons(s)
+            s["why_line"] = s["reasons"] + ([f"ضغط الزوار، المطلوب {s['base']} حد أدنى + {s['volume_reason']['adds']}"]
+                                            if s["volume_reason"] else [])
+            s["top"] = _top_candidate(s["id"])
             decisions.append({**s, "shift_label": sh["label_ar"], "start_hm": sh["starts_at"][11:16],
-                              "end_hm": sh["ends_at"][11:16]})
+                              "end_hm": sh["ends_at"][11:16], "slot_key": sh["slot"]})
         # Approved, waiting for the employee (design: the blue state). The seat
         # already counts as covered (ADR 0005), so these are not decisions.
         for s in sites:
@@ -175,14 +260,35 @@ def _board_context(day: date) -> dict:
                                 "end_hm": sh["ends_at"][11:16], "waiting_names": names})
         shifts.append({**sh, "sites": sites, "open_count": len(open_sites),
                        "open_phrase": f"{gaps_phrase(len(open_sites))} من {len(sites)} موقعًا",
+                       "waiting_count": sum(s["waiting_n"] > 0 for s in sites),
+                       "covered_count": sum(s["state"] == "covered" for s in sites),
                        "start_hm": sh["starts_at"][11:16], "end_hm": sh["ends_at"][11:16]})
+    # Priority: a confirmed gap (the base minimum itself is broken) before an
+    # anticipated one, then the more important site, then the earlier shift.
+    order = {"morning": 0, "evening": 1}
+    decisions.sort(key=lambda s: ({"confirmed": 0, "anticipated": 1}[s["gap_nature"]], -s["importance"],
+                                  order.get(s["slot_key"], 2), s["site_code"]))
+    cells = [site for sh in shifts for site in sh["sites"]]
+    kpi = {
+        "sites": len({s["site_code"] for s in cells}), "shifts": len(shifts),
+        "seats_target": sum(s["target"] for s in cells),
+        "seats_filled": sum(min(s["filled"], s["target"]) for s in cells),
+        "decisions": len(decisions),
+        "confirmed": sum(s["gap_nature"] == "confirmed" for s in decisions),
+        "anticipated": sum(s["gap_nature"] == "anticipated" for s in decisions),
+        "waiting": sum(s["waiting_n"] for s in cells),
+        "volume_added": sum(s["volume_uplift"] for s in cells),
+        "shifts_phrase": ("في مناوبتين" if len(shifts) == 2 else
+                          f"في المناوبة {shifts[0]['label_ar']} فقط" if shifts else ""),
+    }
+    default_tab = next((sh["slot"] for sh in shifts if sh["open_count"]), shifts[0]["slot"] if shifts else None)
     n = data["summary"]["open"]
     if not shifts:
         verdict = ("هذا يوم من إعادة عرض أوساكا 2025: للاطلاع على التنبؤ ومقارنته بالفعلي فقط، فلا مناوبات فيه ولا فجوات."
                    if forecast and forecast["mode"] == "osaka_replay" else "لا توجد مناوبات في هذا اليوم.")
     elif not n:
-        verdict = ("كل المواقع الحرجة مغطاة في المناوبتين. لا شيء ينتظر قرارك." if len(shifts) == 2 else
-                   "كل المواقع الحرجة مغطاة في هذا اليوم. لا شيء ينتظر قرارك.")
+        verdict = ("كل المواقع الحرجة مغطاة في المناوبتين." if len(shifts) == 2 else
+                   "كل المواقع الحرجة مغطاة في هذا اليوم.")
     else:
         verdict = "المقعد الفارغ مكتوب عليه من يملؤه. افتحه لترى المرشحين ولماذا."
     waiting_verdict = "اعتُمد البديل، والمقعد محجوز له حتى يرد. تتحدّث اللوحة وحدها عند وصول الرد."
@@ -200,6 +306,9 @@ def _board_context(day: date) -> dict:
         "no_shifts": not shifts,
         "waiting": waiting, "waiting_verdict": waiting_verdict,
         "waiting_phrase": counted(len(waiting), "ردّ واحد", "ردّين", "ردود", "ردًّا"),
+        "requests_phrase": counted(kpi["waiting"], "طلب واحد", "طلبان", "طلبات", "طلبًا"),
+        "kpi": kpi, "default_tab": default_tab, "shift_days": days,
+        "is_replay": bool(forecast and forecast["mode"] == "osaka_replay"),
     }
 
 
@@ -227,7 +336,9 @@ def _forecast_panel(fj: dict) -> dict | None:
         v["horizon_phrase"] = counted(v["horizon_days"], "يوم واحد", "يومين", "أيام", "يومًا")
         v["fmt"] = {k: f"{round(v[k]):,}" for k in ("p10", "p50", "p90", "actual", "threshold_high", "threshold_peak")}
         v["actual_level_ar"] = {"normal": "عادي", "high": "مرتفع", "peak": "ذروة"}.get(v["actual_level"] or "", "")
-    return {**fc, "effect_rows": rows, "total_added": eff["total_added"],
+    # the gauge: three equal zones on a half circle, low on the right (RTL), high on the left
+    gauge = {"normal": 30, "high": 90, "peak": 150}.get(fc["level"], 30)
+    return {**fc, "effect_rows": rows, "total_added": eff["total_added"], "needle": gauge,
             "sites_phrase": counted(sum(len(c["sites"]) for c in rows), "موقع واحد", "موقعين", "مواقع", "موقعًا"),
             "applies": eff["applies_to_shifts"],
             "rules_loaded": fj["rules_loaded"],
@@ -261,6 +372,7 @@ def candidates(request, requirement_id: int):
         c["score_display"] = f"{c['score']:.2f}"
         c["category_ar"] = labels.get(c["category"], c["category"])
         c["first_name"] = first_name(c["name"])
+        c["initial"] = c["name"][:1]
         for r in c["reasons"]:
             r["icon"] = KIND_ICON.get(r["kind"], "")
         c["parts"] = [{"key": k, "label": PART_AR[k], "value": v, "weight": policy.WEIGHTS[k],
@@ -272,6 +384,21 @@ def candidates(request, requirement_id: int):
         for x in people:
             x["category_ar"] = labels.get(x["category"], x["category"])
         groups.append({"code": code, "label": ExclusionCode(code).label, "count": n, "people": people})
+    # The funnel: everyone, then the eight rules in check order, each removing the
+    # people whose FIRST failure it is (the engine records exactly one). Rules that
+    # removed nobody stay visible: they were checked too.
+    evaluated = len(d["candidates"]) + len(d["excluded"])
+    by_code = {g["code"]: g for g in groups}
+    remaining, funnel = evaluated, []
+    for code in ExclusionCode.values:
+        g = by_code.get(code)
+        removed = g["count"] if g else 0
+        remaining -= removed
+        funnel.append({"code": code, "label": ExclusionCode(code).label, "removed": removed, "remaining": remaining,
+                       "pct": round(100 * remaining / evaluated, 1) if evaluated else 0,
+                       "people": g["people"] if g else []})
+    extra_all_full = bool(d["candidates"]) and all(
+        float(c["score_parts"]["extra_skills"]) == policy.WEIGHTS["extra_skills"] for c in d["candidates"])
     b = d["baseline"]
     if b:
         b["breaks_site_name"] = site_names.get(b["breaks_site"], b["breaks_site"])
@@ -289,10 +416,95 @@ def candidates(request, requirement_id: int):
         "nature_ar": NATURE_AR.get(d["requirement"]["gap_nature"]),
         "start_hm": shift["starts_at"][11:16], "end_hm": shift["ends_at"][11:16],
         "back": f"{reverse('board')}?date={req.shift.date.isoformat()}",
-        "evaluated": len(d["candidates"]) + len(d["excluded"]),
+        "evaluated": evaluated, "funnel": funnel, "extra_all_full": extra_all_full,
+        "featured": d["candidates"][:2], "rest": d["candidates"][2:],
+        "rest_phrase": counted(len(d["candidates"]) - 2, "مرشحًا واحدًا آخر", "مرشحَين آخرَين", "مرشحين آخرين",
+                               "مرشحًا آخر"),
+        "eligible_phrase": counted(len(d["candidates"]), "مرشح واحد", "مرشحان", "مرشحين", "مرشحًا"),
         "baseline_minutes": minutes_phrase(b["travel"]) if b else "",
         "baseline_short": people_phrase(b["donor_short_by"]) if b else "",
+        "nav_page": "board",
     })
+
+
+# --------------------------------------------------------------- requests
+
+# What happened to one approved replacement, from its status and response time.
+REQUEST_STATE = {
+    "waiting": ("بانتظار الرد", "المقعد محجوز حتى يقبل أو يعتذر"),
+    "accepted": ("قبِل", "التكليف مؤكد"),
+    "declined": ("اعتذر", "عادت الفجوة إلى «يحتاج قرارك»"),
+    "absent": ("غياب بعد القبول", "سُجّل غيابه في المناوبة"),
+    "closed": ("أُغلق", "لم يعد الطلب قائمًا"),
+}
+
+
+def _request_state(a: Assignment) -> str:
+    if a.status == AssignmentStatus.PLANNED and a.responded_at is None:
+        return "waiting"
+    if a.status == AssignmentStatus.CONFIRMED:
+        return "accepted"
+    if a.status == AssignmentStatus.CANCELLED and a.responded_at is not None:
+        return "declined"
+    if a.status == AssignmentStatus.ABSENT:
+        return "absent"
+    return "closed"
+
+
+def _requests_version() -> str:
+    """Fingerprint of every approved replacement (read-only, one SELECT)."""
+    import hashlib
+    rows = list(Assignment.objects.filter(origin=AssignmentOrigin.REPLACEMENT).order_by("id")
+                .values_list("id", "status", "responded_at"))
+    return hashlib.sha256(repr(rows).encode()).hexdigest()[:16]
+
+
+def _requests_context(request) -> dict:
+    rows = []
+    now = timezone.now()
+    qs = (Assignment.objects.filter(origin=AssignmentOrigin.REPLACEMENT)
+          .select_related("employee__category", "site", "shift", "approved_by", "moved_from__site")
+          .order_by("-approved_at", "-id"))
+    labels = dict(CategoryRule.Category.choices)
+    for a in qs:
+        state = _request_state(a)
+        rows.append({
+            "a": a, "state": state, "state_ar": REQUEST_STATE[state][0], "state_note": REQUEST_STATE[state][1],
+            "initial": a.employee.name[:1], "category_ar": labels.get(a.employee.category.category,
+                                                                      a.employee.category.category),
+            "approved_at": timezone.localtime(a.approved_at) if a.approved_at else None,
+            "responded_at": timezone.localtime(a.responded_at) if a.responded_at else None,
+            "approver": (a.approved_by.get_full_name() or a.approved_by.username) if a.approved_by else "",
+            "board": f"{reverse('board')}?date={a.shift.date.isoformat()}",
+            "link": _offer_link(request, a, now) if state == "waiting" else None,
+        })
+    counts = {k: sum(r["state"] == k for r in rows) for k in REQUEST_STATE}
+    return {"rows": rows, "counts": counts, "total": len(rows)}
+
+
+@supervisor_page
+def requests_page(request):
+    version = _requests_version()
+    ctx = _requests_context(request)
+    ctx.update(live_version=version, poll_ms=getattr(settings, "COVERCAST_BOARD_POLL_MS", 5000), nav_page="requests")
+    return render(request, "coverage/requests.html", ctx)
+
+
+def requests_live(request):
+    """The requests list for the same 5-second poll as the board: 204 / 200 / 403, never a redirect."""
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+    if not is_supervisor(request.user):
+        return HttpResponseForbidden("", headers={"X-Board-Auth": "login" if not request.user.is_authenticated
+                                                   else "forbidden"})
+    version = _requests_version()
+    headers = {"X-Board-Version": version, "Cache-Control": "no-store"}
+    if request.GET.get("v") == version:
+        return HttpResponse(status=204, headers=headers)
+    response = render(request, "coverage/_requests_live.html", _requests_context(request))
+    for k, v in headers.items():
+        response[k] = v
+    return response
 
 
 # ------------------------------------------------------------------ offer

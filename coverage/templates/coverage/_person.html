@@ -1,0 +1,47 @@
+<li class="person{% if c.rank == 1 %} top{% endif %}" data-employee="{{ c.employee_code }}">
+  <div class="who-av" aria-hidden="true">{{ c.initial }}<span class="rank">{{ c.rank }}</span></div>
+  <div>
+    <h3>{{ c.name }}{% if c.tag == "recommended" %}<span class="tag recommended">المرشح الأول</span>{% elif c.tag == "backup" %}<span class="tag backup">احتياطي</span>{% endif %}</h3>
+    <p class="meta"><span class="visually-hidden">الترتيب {{ c.rank }}، </span>{{ c.category_ar }} <span class="code">{{ c.employee_code }}</span>{% if c.donor_site %}، في {{ c.donor_site_name }} خلال هذه المناوبة{% else %}، خارج المناوبة (استدعاء){% endif %}</p>
+  </div>
+  <div class="score"><b>{{ c.score_display }}</b><small>من 100</small></div>
+  <div class="body">
+    <ul class="reasons">
+      {% for r in c.reasons %}<li class="{{ r.kind }}" data-icon="{{ r.icon }}">{{ r.text_ar }}</li>{% endfor %}
+    </ul>
+    <details class="parts"{% if c.rank <= 2 %} open{% endif %}>
+      <summary>تفصيل الدرجة {{ c.score_display }}</summary>
+      <ul class="tiles" aria-label="أجزاء الدرجة: {% for p in c.parts %}{{ p.label }} {{ p.value }}{% if not forloop.last %}، {% endif %}{% endfor %}">
+        {% for p in c.parts %}<li><span class="t-label">{{ p.label }}</span><span class="t-value">{{ p.value|floatformat:"2u" }} / {{ p.weight }}</span><span class="t-bar"><i style="width:{{ p.pct }}%;background:var(--p-{{ p.key }})"></i></span></li>{% endfor %}
+      </ul>
+    </details>
+    <div class="act">
+      <button class="btn{% if c.rank != 1 %} quiet{% endif %}" data-approve="{% url 'api-approve' d.requirement.id %}"
+              data-code="{{ c.employee_code }}" data-slot="{{ d.slot.slot }}" data-name="{{ c.first_name }}"
+              data-dialog="confirm-{{ c.employee_code }}"
+              data-confirm="اعتماد {{ c.name }} لـ{{ d.requirement.site_name }}؟{% if c.donor_site %} يعني ذلك النقل من {{ c.donor_site_name }}.{% endif %}">اعتماد {{ c.first_name }}</button>
+      {% if c.donor_site %}<span class="move">نقل من {{ c.donor_site_name }}، ولا يُنزله تحت حده الأدنى</span>{% else %}<span class="move">استدعاء من خارج المناوبة</span>{% endif %}
+    </div>
+    <div class="result" hidden aria-live="polite"></div>
+  </div>
+  <dialog class="confirm" id="confirm-{{ c.employee_code }}" aria-labelledby="confirm-{{ c.employee_code }}-h">
+    <h2 id="confirm-{{ c.employee_code }}-h">اعتماد {{ c.name }}؟</h2>
+    <p class="sub">{{ d.requirement.site_name }} · {{ req.shift.date|date:"l j F" }} · {{ d.requirement.shift.label_ar }} <span dir="ltr">{{ start_hm }}–{{ end_hm }}</span></p>
+    {% if c.near_cap %}<div class="warn" role="note"><b>يقترب من سقف الساعات</b>بعد التكليف تصير ساعاته {{ c.hours_after }} من {{ c.hours_cap }}.</div>{% endif %}
+    <div class="move-box">
+      <div><small>من</small><b>{% if c.donor_site %}{{ c.donor_site_name }}{% else %}خارج المناوبة (استدعاء){% endif %}</b></div>
+      <span class="arrow" aria-hidden="true">←</span>
+      <div><small>إلى</small><b>{{ d.requirement.site_name }} <span dir="ltr">({{ d.requirement.site_code }})</span></b></div>
+    </div>
+    <h3>أثر القرار</h3>
+    <ul>
+      {% if c.donor_site %}<li class="positive" data-icon="✓">{{ c.donor_site_name }} يبقى عند حده الأدنى</li>{% else %}<li class="positive" data-icon="✓">لا يؤثر على أي موقع آخر</li>{% endif %}
+      {% for r in c.reasons %}{% if r.code != "REQ_MET" and r.code != "KEEPS_MIN_AT_SITE" %}<li class="{{ r.kind }}" data-icon="{{ r.icon }}">{{ r.text_ar }}</li>{% endif %}{% endfor %}
+    </ul>
+    <p class="note">بعد التأكيد يُحجز المقعد، ويظهر لك رابط ترسله إلى {{ c.first_name }} ليقبل أو يعتذر. إن اعتذر، تعود الفجوة إلى «يحتاج قرارك»{% if c.donor_site %} ويعود إلى {{ c.donor_site_name }}{% endif %}.</p>
+    <div class="actions">
+      <button class="btn" type="button" data-confirm-approve>{% if c.near_cap %}اعتماد رغم التنبيه{% else %}تأكيد الاعتماد{% endif %}</button>
+      <button class="btn quiet" type="button" data-cancel>رجوع</button>
+    </div>
+  </dialog>
+</li>

@@ -135,3 +135,4 @@ COVERCAST_DEMO_DATA_DIR = BASE_DIR / "data" / "demo" / "v0.2"
 # (GET /board/live; 204 when nothing did). Polling, not WebSockets: no new
 # infrastructure. Paused while the tab is hidden.
 COVERCAST_BOARD_POLL_MS = int(os.environ.get("COVERCAST_BOARD_POLL_MS", "5000"))
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.61.1.16"]

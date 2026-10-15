@@ -4,6 +4,7 @@
 <section class="single">
   <p class="brand">Cover<span>Cast</span></p>
   <h1>دخول المشرف</h1>
+  <p class="muted">لوحة تغطية المواقع الحرجة في إكسبو 2030.</p>
   {% if form.errors %}<p class="form-error" role="alert">اسم المستخدم أو كلمة المرور غير صحيحة.</p>{% endif %}
   <form method="post">{% csrf_token %}
     <div class="field"><label for="id_username">اسم المستخدم</label>
@@ -13,7 +14,7 @@
     <div class="field"><label for="id_password">كلمة المرور</label>
       <input id="id_password" name="password" type="password" autocomplete="current-password" required></div>
     <input type="hidden" name="next" value="{{ next }}">
-    <button class="btn">دخول</button>
+    <button class="btn block">دخول</button>
   </form>
 </section>
 {% endblock %}

@@ -1,10 +1,23 @@
 {% if forecast %}
 <section class="pressure lvl-{{ forecast.level }} {{ forecast.mode }}" aria-labelledby="pressure-h" data-level="{{ forecast.level }}" data-mode="{{ forecast.mode }}">
+  <figure class="gauge" role="img" aria-label="ضغط الزوار {{ forecast.level_ar }}، من ثلاثة مستويات: عادي ثم مرتفع ثم ذروة">
+    <svg viewBox="0 -8 200 122" aria-hidden="true">
+      <defs><linearGradient id="g-heat" gradientUnits="userSpaceOnUse" x1="180" y1="0" x2="20" y2="0">
+        <stop offset="0" class="g-stop-normal"/><stop offset="0.5" class="g-stop-high"/><stop offset="1" class="g-stop-peak"/>
+      </linearGradient></defs>
+      <path class="g-zone g-normal" d="M 179.99 98.6 A 80 80 0 0 0 141.2 31.43"/>
+      <path class="g-zone g-high" d="M 138.79 30.03 A 80 80 0 0 0 61.21 30.03"/>
+      <path class="g-zone g-peak" d="M 58.8 31.43 A 80 80 0 0 0 20.01 98.6"/>
+      <g class="g-needle" transform="rotate(-{{ forecast.needle }} 100 100)"><line x1="100" y1="100" x2="160" y2="100"/></g>
+      <circle class="g-hub" cx="100" cy="100" r="7"/>
+      <text class="g-label" x="172" y="114" text-anchor="middle">عادي</text>
+      <text class="g-label" x="100" y="2" text-anchor="middle">مرتفع</text>
+      <text class="g-label" x="28" y="114" text-anchor="middle">ذروة</text>
+    </svg>
+    <figcaption>{{ forecast.level_ar }}</figcaption>
+  </figure>
   <div class="pressure-head">
     <h2 id="pressure-h">ضغط الزوار: <strong>{{ forecast.level_ar }}</strong></h2>
-    <ol class="meter" aria-label="المستوى {{ forecast.level_ar }}، من ثلاثة: عادي ثم مرتفع ثم ذروة">
-      {% for m in forecast.meter %}<li class="{% if m.on %}on{% endif %}{% if m.current %} current{% endif %}">{{ m.label }}</li>{% endfor %}
-    </ol>
   </div>
   <p class="provenance"><span class="tag">{% if forecast.mode == "riyadh_scenario" %}سيناريو محاكى، ليس تنبؤًا{% else %}بيانات رسمية · أوساكا 2025{% endif %}</span> {{ forecast.provenance_ar }}</p>
 
@@ -30,10 +43,13 @@
   <div class="effect">
     {% if forecast.effect_rows %}
     <p class="effect-sum">{% if forecast.applies %}أثره على الاحتياج: <b><bdi dir="ltr">+{{ forecast.total_added }}</bdi></b> في {{ forecast.sites_phrase }}{% else %}للتوضيح فقط: لو طُبّق هذا المستوى على مواقع العرض المحاكاة لأضاف <b><bdi dir="ltr">+{{ forecast.total_added }}</bdi></b> في {{ forecast.sites_phrase }}. لا مناوبات في هذا اليوم، فلا يتغير أي احتياج.{% endif %}</p>
-    <table class="effect-table">
-      <thead><tr><th scope="col">الفئة</th><th scope="col">لكل موقع</th><th scope="col">المواقع</th><th scope="col">المجموع</th></tr></thead>
-      <tbody>{% for c in forecast.effect_rows %}<tr><th scope="row">{{ c.category_ar }}</th><td><bdi dir="ltr">+{{ c.extra_staff_per_site }}</bdi></td><td dir="ltr" class="code">{{ c.sites_phrase }}</td><td><bdi dir="ltr">+{{ c.total }}</bdi></td></tr>{% endfor %}</tbody>
-    </table>
+    <details>
+      <summary>الزيادة حسب الفئة والمواقع</summary>
+      <table class="effect-table">
+        <thead><tr><th scope="col">الفئة</th><th scope="col">لكل موقع</th><th scope="col">المواقع</th><th scope="col">المجموع</th></tr></thead>
+        <tbody>{% for c in forecast.effect_rows %}<tr><th scope="row">{{ c.category_ar }}</th><td><bdi dir="ltr">+{{ c.extra_staff_per_site }}</bdi></td><td dir="ltr" class="code">{{ c.sites_phrase }}</td><td><bdi dir="ltr">+{{ c.total }}</bdi></td></tr>{% endfor %}</tbody>
+      </table>
+    </details>
     {% elif not forecast.rules_loaded %}
     <p class="effect-sum muted">لا توجد قواعد احتياج محمّلة، فلا يضيف المستوى أفرادًا.</p>
     {% else %}

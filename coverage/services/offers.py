@@ -42,8 +42,24 @@ def _signer() -> signing.TimestampSigner:
     return signing.TimestampSigner(salt=policy.OFFER_TOKEN_SALT)
 
 
-def offer_token(assignment: Assignment) -> str:
-    return _signer().sign(str(assignment.pk))
+def offer_token(assignment: Assignment, *, signed_at: datetime | None = None) -> str:
+    """The employee's link. With `signed_at` (the approval time), the SAME validity
+    window is rebuilt for a supervisor who needs the link again: it expires
+    OFFER_TOKEN_MAX_AGE_HOURS after the approval, exactly like the first one,
+    so showing it again never extends it."""
+    signer = _signer()
+    if signed_at is not None:
+        stamp = signing.b62_encode(int(signed_at.timestamp()))
+        signer.timestamp = lambda: stamp
+    return signer.sign(str(assignment.pk))
+
+
+def offer_expires_at(assignment: Assignment) -> datetime | None:
+    """When the link of an approved replacement stops working (approval + max age)."""
+    if assignment.approved_at is None:
+        return None
+    from datetime import timedelta
+    return assignment.approved_at + timedelta(hours=policy.OFFER_TOKEN_MAX_AGE_HOURS)
 
 
 def read_token(token: str) -> int:

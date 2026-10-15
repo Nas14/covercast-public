@@ -3,19 +3,42 @@
 {% block title %}لوحة {{ day|date:"l j F" }} | CoverCast{% endblock %}
 {% block sim_note %}{% if forecast.mode == "osaka_replay" %}أرقام الزوار في هذه الصفحة رسمية من إكسبو أوساكا 2025. قيم الزيادة في الاحتياج ومواقع العرض محاكاة لأغراض العرض.{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block content %}
-<div class="day">
-  <h1>{{ day|date:"l j F Y" }}</h1>
-  <nav class="nav" aria-label="الأيام">
-    {% if prev_day %}<a class="btn quiet small" href="?date={{ prev_day|date:'Y-m-d' }}">اليوم السابق</a>{% endif %}
-    {% if next_day %}<a class="btn quiet small" href="?date={{ next_day|date:'Y-m-d' }}">اليوم التالي</a>{% endif %}
-    {% if replay_link %}<a class="btn quiet small" href="?date={{ replay_link|date:'Y-m-d' }}">إعادة عرض أوساكا 2025</a>{% endif %}
-    {% if back_to_shifts %}<a class="btn quiet small" href="?date={{ back_to_shifts|date:'Y-m-d' }}">العودة إلى مناوبات 2030</a>{% endif %}
+<div class="page-head day">
+  <div>
+    <h1>{{ day|date:"l j F Y" }}</h1>
+    <p class="live-status" data-live-status role="status" aria-live="polite">تتحدّث اللوحة تلقائيًا</p>
+  </div>
+  {% if replay_link or back_to_shifts %}
+  <nav class="tools" aria-label="مصدر البيانات">
+    <div class="mode-switch">
+      <a href="?date={% if back_to_shifts %}{{ back_to_shifts|date:'Y-m-d' }}{% else %}{{ day|date:'Y-m-d' }}{% endif %}"{% if not is_replay %} aria-current="page"{% endif %}>مناوبات الرياض 2030</a>
+      <a class="osaka" href="?date={% if replay_link %}{{ replay_link|date:'Y-m-d' }}{% else %}{{ day|date:'Y-m-d' }}{% endif %}"{% if is_replay %} aria-current="page"{% endif %}>إعادة عرض أوساكا 2025</a>
+    </div>
   </nav>
+  {% endif %}
 </div>
 
-<p class="live-status" data-live-status role="status" aria-live="polite">تتحدّث اللوحة تلقائيًا</p>
+<nav class="day-bar" aria-label="التنقل بين الأيام">
+  {% if day_strip %}
+  <ol class="days">
+    {% for d in day_strip %}
+    <li><a href="?date={{ d.date|date:'Y-m-d' }}"{% if d.current %} aria-current="date"{% endif %} title="{% for n in d.notes %}{{ n }}{% if not forloop.last %}، {% endif %}{% endfor %}">
+      <span class="num">{{ d.date|date:"j" }}</span>
+      <span class="wd">{{ d.date|date:"l" }} <span class="faint">{{ d.date|date:"F" }}</span></span>
+      <span class="note">{% if d.notes %}{{ d.notes|first }}{% if d.notes|length > 1 %} (+{{ d.notes|length|add:"-1" }}){% endif %}{% else %}بلا أحداث في التقويم{% endif %}</span>
+    </a></li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <ol class="days replay-days">
+    {% if prev_day %}<li><a href="?date={{ prev_day|date:'Y-m-d' }}"><span class="num" aria-hidden="true">›</span><span class="wd">اليوم السابق</span><span class="note">{{ prev_day|date:"j F Y" }}</span></a></li>{% endif %}
+    <li><a href="?date={{ day|date:'Y-m-d' }}" aria-current="date"><span class="num">{{ day|date:"j" }}</span><span class="wd">{{ day|date:"l" }}</span><span class="note">إعادة عرض أوساكا 2025</span></a></li>
+    {% if next_day %}<li><a href="?date={{ next_day|date:'Y-m-d' }}"><span class="num" aria-hidden="true">‹</span><span class="wd">اليوم التالي</span><span class="note">{{ next_day|date:"j F Y" }}</span></a></li>{% endif %}
+  </ol>
+  {% endif %}
+</nav>
 
-<div id="board-live" data-live="{% url 'board-live' %}?date={{ day|date:'Y-m-d' }}" data-version="{{ live_version }}" data-interval="{{ poll_ms }}">
+<div id="board-live" data-live="{% url 'board-live' %}?date={{ day|date:'Y-m-d' }}" data-version="{{ live_version }}" data-interval="{{ poll_ms }}" data-view-key="board">
 {% include "coverage/_board_live.html" %}
 </div>
 {% endblock %}

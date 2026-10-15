@@ -84,11 +84,17 @@ class BoardPageTests(PageCase):
     def test_monday_puts_g1_first_with_the_shape_of_the_missing_person(self):
         r = self.c.get("/board?date=2030-10-14")
         t = self.text(r)
-        self.assertIn("يحتاج قرارك: فجوة واحدة", t)
-        decide = r.content.decode().split('class="shift"')[0]          # the top section only
-        self.assertIn('data-site="S03"', decide)
-        self.assertIn("إسعاف أولي متقدم + اليابانية + مسعف", decide)
-        self.assertIn("فجوة متوقعة", decide)
+        html = r.content.decode()
+        # round 5: no separate gap cards; the gap is the first site card of the morning
+        self.assertNotIn("gap-card", html)
+        self.assertEqual(re.findall(r'data-site="(S\d+)" data-state="open"', html), ["S03"])
+        morning = html[html.index('id="panel-morning"'):html.index('id="panel-evening"')]
+        self.assertLess(morning.index('data-site="S03"'), morning.index('data-site="S12"'))
+        card = morning[morning.index('data-site="S03"'):morning.index("اختر بديلًا")]
+        for need in ("إسعاف أولي متقدم", "اليابانية", "مسعف"):
+            self.assertIn(f'<span class="need">{need}</span>', card)
+        self.assertIn("فجوة متوقعة", card)
+        self.assertIn("المرشح الأول: <b>نوره القحطاني</b>", card)
         self.assertIn("المطلوب 4، الحاضر 5", t)                       # S12 has one more than its minimum
         self.assertIn("كل المواقع مغطاة", t)                          # the evening shift
 
@@ -100,7 +106,8 @@ class BoardPageTests(PageCase):
 
     def test_quiet_day_says_so(self):
         t = self.text(self.c.get("/board?date=2030-10-13"))
-        self.assertIn("لا شيء ينتظر قرارك", t)
+        self.assertIn("فجوات تحتاج قرارك 0 كل المواقع الحرجة مغطاة في المناوبتين.", t)
+        self.assertNotIn('class="decide', self.c.get("/board?date=2030-10-13").content.decode())   # nothing waits: no top section
 
     def test_absence_buttons_point_at_the_api(self):
         r = self.c.get("/board?date=2030-10-14")
@@ -123,9 +130,14 @@ class CandidatesPageTests(PageCase):
         self.assertIn("نقله لا يكسر الحد الأدنى في موقعه الحالي (المركز الطبي)", t)
         self.assertContains(r, "كان الاختيار سيقع على <b>احمد الدوسري</b>، على بعد 10 دقائق.")
         self.assertIn("لكن الموقع خارج نطاق الإعارة، ونقله يُنقص البوابة الشمالية شخصًا واحدًا.", t)
-        self.assertIn("74 لا يحمل المهارة المطلوبة", t)
+        # the funnel: each rule, how many it removed, how many remain (check order)
+        self.assertIn("لا يحمل المهارة المطلوبة −74 يبقى 4", t)          # 4 left, then
+        self.assertIn("شهادة منتهية في تاريخ المناوبة −1 يبقى 3", t)     # Reem (CERT_EXPIRED)
+        self.assertIn("خارج نطاق الإعارة −1 يبقى 2", t)                 # Ahmed (SCOPE_OUT)
+        self.assertIn("اجتازوا القواعد كلها 2", t)
+        self.assertIn("كيف وصلنا من 80 إلى 2", t)
         self.assertContains(r, 'data-code="E061"')
-        self.assertContains(r, 'style="width:22.5%;background:var(--p-proximity)"')   # not "22,5"
+        self.assertContains(r, 'style="width:75.0%;background:var(--p-proximity)"')   # 22.50 of 30; not "75,0"
 
     def test_covered_site_explains_instead_of_crashing(self):
         self.c.get("/board?date=2030-10-14")
@@ -212,7 +224,7 @@ class ForecastPanelPages(TestCase):
         self.assertIn("أثره على الاحتياج: +13 في 10 مواقع", t)
         self.assertIn("البوابات والأمن", t)
         self.assertIn("ليست معيار توظيف رسميًا", t)
-        self.assertIn("المطلوب = 3 حد أدنى + 1 بسبب ضغط الزوار: ذروة (افتراض سيناريو محاكى، ليس تنبؤًا)", t)
+        self.assertIn("السبب: ضغط الزوار، المطلوب 3 حد أدنى + 1", t)          # on the S10 site card (round 5)
         self.assertIn("إعادة عرض أوساكا 2025", t)
 
     def test_osaka_day_is_official_and_not_riyadh(self):
@@ -229,7 +241,7 @@ class ForecastPanelPages(TestCase):
     def test_g1_day_has_no_panel(self):
         t = self.text(self.c.get("/board?date=2030-10-14"))
         self.assertNotIn("ضغط الزوار", t)
-        self.assertIn("يحتاج قرارك: فجوة واحدة", t)
+        self.assertIn("فجوات تحتاج قرارك 1", t)
 
     def test_candidates_page_names_the_level_as_the_reason(self):
         self.c.get("/board?date=2030-10-24")
@@ -280,9 +292,9 @@ class ShahadDesignPages(PageCase):
                         return_value=datetime(2030, 10, 14, 5, tzinfo=ZoneInfo("Asia/Riyadh"))):
             approve(g1.site, g1.shift, "E061", idempotency_key="w", supervisor=self.sup)
         t = self.text(self.c.get("/board?date=2030-10-14"))
-        self.assertIn("بانتظار ردّ واحد", t)
+        self.assertIn("بانتظار رد الموظف: طلب واحد", t)
         self.assertIn("المقعد محجوز لـنوره القحطاني حتى يقبل أو يعتذر", t)
-        self.assertNotIn("يحتاج قرارك", t)
+        self.assertIn("فجوات تحتاج قرارك 0", t)
 
     def test_brand_and_actions_use_the_design_green(self):
         css = (APP / "static" / "coverage" / "covercast.css").read_text(encoding="utf-8")

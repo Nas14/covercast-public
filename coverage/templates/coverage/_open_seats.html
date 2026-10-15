@@ -1,0 +1,9 @@
+{% comment %}An empty seat is a description, not a button: it says what the person who fills it
+must hold. The card's «اختر بديلًا» is the one way in (slots are renumbered after each
+approval, so slot 1 is always the next seat to fill).{% endcomment %}
+{% for seat in site.seats %}{% if seat.kind == "open" %}
+<div class="seat open">
+  <span class="open-label">مقعد فارغ، يحتاج</span>
+  <span class="needs">{% for s in seat.must_have_ar %}<span class="need">{{ s }}</span>{% empty %}<span class="need">أي شخص مؤهل</span>{% endfor %}</span>
+</div>
+{% endif %}{% endfor %}

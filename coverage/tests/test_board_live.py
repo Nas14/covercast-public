@@ -67,7 +67,8 @@ class VersionCheck(LiveCase):
         self.assertEqual(r["Cache-Control"], "no-store")
         html = r.content.decode()
         self.assertIn('data-site="S10"', html)
-        self.assertIn("يحتاج قرارك: فجوة واحدة", html)
+        self.assertEqual(html.count('data-state="open"'), 1)   # one gap, on its site card (round 5)
+        self.assertIn("اعرض الفجوات", html)
         self.assertNotIn("<html", html)                    # a fragment, not a page
 
     def test_version_changes_on_approval_then_on_acceptance(self):
@@ -77,7 +78,7 @@ class VersionCheck(LiveCase):
         self.assertNotEqual(v0, v1)
         r = self.get(v0)
         self.assertEqual(r.status_code, 200)
-        self.assertNotIn("يحتاج قرارك", r.content.decode())    # the seat is held for E066
+        self.assertNotIn('data-state="open"', r.content.decode())    # the seat is held for E066
         self.assertIn("بانتظار الرد", r.content.decode())
         respond(offer_token(result.assignment), accept=True)
         v2 = board_version(DAY)
@@ -89,7 +90,7 @@ class VersionCheck(LiveCase):
         v1 = board_version(DAY)
         respond(offer_token(result.assignment), accept=False)
         self.assertNotEqual(v1, board_version(DAY))
-        self.assertIn("يحتاج قرارك: فجوة واحدة", self.get(v1).content.decode())   # the gap is back
+        self.assertEqual(self.get(v1).content.decode().count('data-state="open"'), 1)   # the gap is back
 
     def test_version_changes_on_absence(self):
         v0 = board_version(DAY)

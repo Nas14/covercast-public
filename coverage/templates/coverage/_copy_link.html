@@ -1,0 +1,3 @@
+{# The employee's link again (same validity window as at approval: offers.offer_token). #}
+<span class="copy-link">{% if l.url %}<button type="button" class="btn small" data-copy="{{ l.url }}" title="{{ l.url }}">نسخ رابط الموظف</button>
+  <small class="faint">صالح حتى <span class="ltr">{{ l.expires|date:"H:i" }}</span>، {{ l.expires|date:"j F" }}</small>{% else %}<small class="faint">انتهت صلاحية الرابط</small>{% endif %}</span>

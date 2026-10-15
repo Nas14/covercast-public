@@ -1,0 +1,17 @@
+{% extends "coverage/base.html" %}
+{% load static %}
+{% block title %}الطلبات | CoverCast{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>الطلبات</h1>
+    <p class="lede">كل بديل اعتمدته، وأين وصل رد الموظف. القائمة تتحدّث وحدها حين يقبل أحد أو يعتذر.</p>
+    <p class="live-status" data-live-status role="status" aria-live="polite" data-idle="تتحدّث القائمة تلقائيًا" data-updated="تحدّثت القائمة">تتحدّث القائمة تلقائيًا</p>
+  </div>
+</div>
+
+<div id="requests-live" data-live="{% url 'requests-live' %}?all=1" data-version="{{ live_version }}" data-interval="{{ poll_ms }}" data-view-key="requests">
+{% include "coverage/_requests_live.html" %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'coverage/covercast.js' %}"></script>{% endblock %}
