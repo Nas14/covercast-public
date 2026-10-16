@@ -1,20 +1,41 @@
 {% extends "coverage/base.html" %}
 {% block title %}دخول المشرف | CoverCast{% endblock %}
+{% block main_class %}auth-page{% endblock %}
+{% block footer %}{% endblock %}
 {% block content %}
-<section class="single">
-  <p class="brand">Cover<span>Cast</span></p>
-  <h1>دخول المشرف</h1>
-  <p class="muted">لوحة تغطية المواقع الحرجة في إكسبو 2030.</p>
-  {% if form.errors %}<p class="form-error" role="alert">اسم المستخدم أو كلمة المرور غير صحيحة.</p>{% endif %}
-  <form method="post">{% csrf_token %}
-    <div class="field"><label for="id_username">اسم المستخدم</label>
-      <input id="id_username" name="username" autocomplete="username" required autofocus dir="ltr"
-             aria-describedby="username-hint" value="{{ form.username.value|default:'' }}">
-      <small id="username-hint" class="faint">اسم الدخول كما أُنشئ بأحرف إنجليزية، مثل nouf، لا الاسم الظاهر.</small></div>
-    <div class="field"><label for="id_password">كلمة المرور</label>
-      <input id="id_password" name="password" type="password" autocomplete="current-password" required></div>
-    <input type="hidden" name="next" value="{{ next }}">
-    <button class="btn block">دخول</button>
-  </form>
-</section>
+{% comment %}Two panels (a teammate's design): the product in one sentence and three points on the
+hero, the sign-in form on the other side. On a phone the hero shrinks to the brand and headline.{% endcomment %}
+<div class="auth">
+  <aside class="auth-hero">
+    <p class="brand">{% include "coverage/_mark.html" %}<span>Cover<span>Cast</span></span></p>
+    <div>
+      <p class="kicker">إكسبو الرياض 2030</p>
+      <h2>اكتشف <em>المقعد الفارغ</em> قبل أن يصبح مشكلة</h2>
+      <p class="lead">نظام دعم قرار للمشرفين: يكشف فجوات التغطية في المواقع الحرجة، ويقترح من يملؤها ولماذا، ويترك القرار لك.</p>
+    </div>
+    <ul class="points">
+      <li><span class="n">1</span><div><b>فجوات مبكرة</b><span>العدد والمهارة معًا، حتى لو اكتمل عدد الأشخاص.</span></div></li>
+      <li><span class="n">2</span><div><b>توصية مفسَّرة</b><span>ترتيب بدرجة من 100، وسبب كل استبعاد.</span></div></li>
+      <li><span class="n">3</span><div><b>القرار بيدك</b><span>اعتماد بتأكيد صريح، ولا يُسجَّل التكليف مرتين.</span></div></li>
+    </ul>
+  </aside>
+  <section class="auth-form">
+    <div class="auth-card">
+      <h1>دخول المشرف</h1>
+      <p class="sub">سجّل الدخول لمتابعة لوحة التغطية واعتماد البدائل.</p>
+      {% if form.errors %}<p class="form-error" role="alert">اسم المستخدم أو كلمة المرور غير صحيحة.</p>{% endif %}
+      <form method="post">{% csrf_token %}
+        <div class="field"><label for="id_username">اسم المستخدم</label>
+          <input id="id_username" name="username" autocomplete="username" required autofocus dir="ltr"
+                 aria-describedby="username-hint" value="{{ form.username.value|default:'' }}">
+          <small id="username-hint" class="faint">اسم الدخول كما أُنشئ بأحرف إنجليزية، مثل nouf، لا الاسم الظاهر.</small></div>
+        <div class="field"><label for="id_password">كلمة المرور</label>
+          <input id="id_password" name="password" type="password" autocomplete="current-password" required></div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn block">دخول</button>
+      </form>
+      {% if simulated_data %}<p class="sim-note">كل الأسماء والأرقام في هذه الصفحة محاكاة لأغراض العرض، وليست بيانات تشغيل حقيقية.</p>{% endif %}
+    </div>
+  </section>
+</div>
 {% endblock %}

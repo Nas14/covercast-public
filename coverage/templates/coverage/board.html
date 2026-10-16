@@ -4,7 +4,8 @@
 {% block sim_note %}{% if forecast.mode == "osaka_replay" %}أرقام الزوار في هذه الصفحة رسمية من إكسبو أوساكا 2025. قيم الزيادة في الاحتياج ومواقع العرض محاكاة لأغراض العرض.{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block content %}
 <div class="page-head day">
-  <div>
+  <div class="title">
+    <p class="kicker">{% if is_replay %}إعادة عرض أوساكا 2025{% else %}لوحة التغطية{% endif %}</p>
     <h1>{{ day|date:"l j F Y" }}</h1>
     <p class="live-status" data-live-status role="status" aria-live="polite">تتحدّث اللوحة تلقائيًا</p>
   </div>

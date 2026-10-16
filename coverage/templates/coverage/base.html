@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#053B30">
   <title>{% block title %}CoverCast{% endblock %}</title>
   <link rel="icon" href="{% static 'coverage/seat.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'coverage/covercast.css' %}">
@@ -16,7 +17,7 @@
   <header class="top">
     <div class="wrap">
       <a class="brand" href="{% url 'home' %}" aria-label="CoverCast، لوحة اليوم">
-        <svg viewBox="0 0 22 22" aria-hidden="true"><rect x="1" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="1" y="8.25" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="8.25" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="8.25" width="5.5" height="5.5" rx="1.5" style="fill:var(--brand)"/><rect x="1" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="8.25" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="15.5" y="15.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".25"/></svg>
+        {% include "coverage/_mark.html" %}
         <span>Cover<span>Cast</span></span></a>
       <nav class="app-nav" aria-label="الأقسام">
         <a href="{% url 'home' %}"{% if nav_page == "board" %} aria-current="page"{% endif %}>لوحة اليوم</a>
@@ -32,8 +33,8 @@
     </div>
   </header>
   {% endif %}
-  <main class="wrap">{% localize off %}{% block content %}{% endblock %}{% endlocalize %}</main>
-  {% if simulated_data %}<footer class="wrap sim-note">{% block sim_note %}كل الأسماء والأرقام في هذه الصفحة محاكاة لأغراض العرض، وليست بيانات تشغيل حقيقية.{% endblock %}</footer>{% endif %}
+  <main class="{% block main_class %}wrap{% endblock %}">{% localize off %}{% block content %}{% endblock %}{% endlocalize %}</main>
+  {% block footer %}{% if simulated_data %}<footer class="wrap sim-note">{% block sim_note %}كل الأسماء والأرقام في هذه الصفحة محاكاة لأغراض العرض، وليست بيانات تشغيل حقيقية.{% endblock %}</footer>{% endif %}{% endblock %}
   <script>
   (function () {
     var btn = document.querySelector("[data-theme-toggle]");
