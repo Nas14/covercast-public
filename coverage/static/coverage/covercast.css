@@ -160,9 +160,9 @@ p { margin: 0; }
   border-radius: 999px; font-size: var(--s-2); font-weight: 700; background: var(--field); color: var(--ink-soft); }
 
 /* ---------- top bar ---------- */
-.top { border-bottom: 1px solid var(--rule); background: var(--surface); }
-@media (min-width: 48rem) { .top { position: sticky; top: 0; z-index: 10; } }
-.top .wrap { display: flex; align-items: center; gap: 0.5rem 1.75rem; min-height: 4.5rem; flex-wrap: wrap; }
+header.top { border-bottom: 1px solid var(--rule); background: var(--surface); }
+@media (min-width: 48rem) { header.top { position: sticky; top: 0; z-index: 10; } }
+header.top .wrap { display: flex; align-items: center; gap: 0.5rem 1.75rem; min-height: 4.5rem; flex-wrap: wrap; }
 .brand { display: inline-flex; align-items: center; gap: 0.625rem; font-weight: 700; font-size: var(--s2);
   letter-spacing: -0.01em; text-decoration: none; color: var(--ink); direction: ltr; }
 .brand span span { color: var(--brand); }
@@ -175,7 +175,7 @@ p.brand span, .single .brand span { color: var(--brand); }
 .app-nav a[aria-current="page"] { background: var(--brand-tint); color: var(--brand-strong); font-weight: 700; }
 .sim-badge { font-size: var(--s-1); font-weight: 500; padding: 0.0625rem 0.5rem; border-radius: 999px;
   border: 1px dashed var(--ink-soft); color: var(--ink-soft); white-space: nowrap; }
-.top .who { margin-inline-start: auto; display: flex; gap: 0.875rem; align-items: center; font-size: var(--s0); }
+header.top .who { margin-inline-start: auto; display: flex; gap: 0.875rem; align-items: center; font-size: var(--s0); }
 .avatar { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; flex: none;
   background: var(--brand); color: #fff; font-weight: 700; font-size: var(--s-1); }
 :root[data-theme="dark"] .avatar { color: #0F1412; }
@@ -649,7 +649,7 @@ dialog.confirm .actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex
   dialog.confirm .move-box { grid-template-columns: 1fr; }
   dialog.confirm .move-box .arrow { transform: rotate(-90deg); justify-self: start; }
   .app-nav { order: 3; width: 100%; }
-  .top .who .name { display: none; }
+  header.top .who .name { display: none; }
   .req-table thead { display: none; }
   .req-table, .req-table tbody, .req-table tr, .req-table td { display: block; width: 100%; }
   .req-table tr { border-bottom: 1px solid var(--rule); padding: 0.5rem 0; }
@@ -833,25 +833,25 @@ a, button, summary, [data-tab], [data-filter], [data-copy] { cursor: pointer; }
 .mark rect.hi { fill: var(--brand); opacity: 1; }
 
 /* top bar on the hero */
-.top { background: var(--hero); border-bottom: 0; color: #fff;
+header.top { background: var(--hero); border-bottom: 0; color: #fff;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 20px -10px rgba(3, 30, 24, 0.6); }
-.top .brand { color: #fff; }
-.top .brand span span { color: var(--gold); }
-.top .mark rect { opacity: 0.4; }
-.top .mark rect.hi { fill: var(--gold); }
-.top .app-nav a { color: rgba(255, 255, 255, 0.78); }
-.top .app-nav a:hover:not([aria-current="page"]) { background: rgba(255, 255, 255, 0.1); color: #fff; }
-.top .app-nav a[aria-current="page"] { background: rgba(255, 255, 255, 0.14); color: #fff;
+header.top .brand { color: #fff; }
+header.top .brand span span { color: var(--gold); }
+header.top .mark rect { opacity: 0.4; }
+header.top .mark rect.hi { fill: var(--gold); }
+header.top .app-nav a { color: rgba(255, 255, 255, 0.78); }
+header.top .app-nav a:hover:not([aria-current="page"]) { background: rgba(255, 255, 255, 0.1); color: #fff; }
+header.top .app-nav a[aria-current="page"] { background: rgba(255, 255, 255, 0.14); color: #fff;
   box-shadow: inset 0 -2px 0 var(--gold); }
-.top .sim-badge { border-color: rgba(255, 255, 255, 0.55); color: rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.07); }
-.top .who .name { color: rgba(255, 255, 255, 0.92); }
-.top .avatar, :root[data-theme="dark"] .top .avatar { background: var(--gold); color: #2A2008; }
-.top .theme-toggle { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.28); }
-.top .theme-toggle:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.top .linkish { color: rgba(255, 255, 255, 0.85); text-decoration: none; padding: 0.25rem 0.75rem; border-radius: 999px;
+header.top .sim-badge { border-color: rgba(255, 255, 255, 0.55); color: rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.07); }
+header.top .who .name { color: rgba(255, 255, 255, 0.92); }
+header.top .avatar, :root[data-theme="dark"] header.top .avatar { background: var(--gold); color: #2A2008; }
+header.top .theme-toggle { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.28); }
+header.top .theme-toggle:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+header.top .linkish { color: rgba(255, 255, 255, 0.85); text-decoration: none; padding: 0.25rem 0.75rem; border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.25); }
-.top .linkish:hover { background: rgba(255, 255, 255, 0.12); color: #fff; text-decoration: none; }
-.top :focus-visible { outline-color: var(--gold); }
+header.top .linkish:hover { background: rgba(255, 255, 255, 0.12); color: #fff; text-decoration: none; }
+header.top :focus-visible { outline-color: var(--gold); }
 
 /* the board's head: the same hero, as a rounded band (date, live status, data source) */
 .page-head.day { margin-top: 1.5rem; margin-bottom: 1.25rem; padding: 1.75rem 2rem; border-radius: 1.25rem;
@@ -915,5 +915,37 @@ main.auth-page { width: 100%; max-width: none; padding: 0; }
   .auth-hero h2 { font-size: var(--s2); }
   .auth-form { padding-block: 2rem 1rem; }
 }
-.top .mark rect.hi, .auth-hero .mark rect.hi { opacity: 1; }
-.auth-hero .brand > span, .top .brand > span { color: #fff; }
+header.top .mark rect.hi, .auth-hero .mark rect.hi { opacity: 1; }
+.auth-hero .brand > span, header.top .brand > span { color: #fff; }
+
+/* ======================================================================
+   Round 8: requests as cards. Same parts in the same places on every card;
+   a filled button only when something waits for the supervisor.
+   ====================================================================== */
+.req-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(24rem, 100%), 1fr)); }
+.req-list > li[hidden] { display: none; }
+.req-card.closed { --nature: var(--rule-strong); --nature-tint: var(--field); --nature-ink: var(--ink-soft); }
+.req-card { display: flex; flex-direction: column; gap: 0.875rem; padding: 1.125rem 1.25rem; background: var(--surface);
+  border: 1px solid var(--rule); border-top: 4px solid var(--nature); border-radius: var(--r-card, 14px);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05); }
+.req-card.covered { --nature: var(--covered); --nature-tint: var(--covered-tint); --nature-ink: var(--brand-strong); }
+.req-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.req-card .req-who { display: flex; align-items: center; gap: 0.625rem; min-width: 0; }
+.req-card .req-who b { display: block; font-size: var(--s0); }
+.req-card .req-who small { display: block; color: var(--ink-faint); font-size: var(--s-1); }
+.req-card .req-state { display: grid; justify-items: end; gap: 0.25rem; text-align: end; flex: none; max-width: 55%; }
+.req-card .req-state small { color: var(--ink-faint); font-size: var(--s-2); line-height: 1.4; }
+.req-where { display: grid; gap: 0.0625rem; padding: 0.625rem 0.75rem; border-radius: var(--r-tile); background: var(--field); }
+.req-where b { font-size: var(--s0); }
+.req-where span { font-size: var(--s-1); color: var(--ink-soft); }
+.req-facts { margin: 0; display: grid; gap: 0.375rem; font-size: var(--s-1); }
+.req-facts > div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.5rem; }
+.req-facts dt { color: var(--ink-faint); }
+.req-facts dd { margin: 0; }
+.req-foot { margin-top: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid var(--rule); }
+.req-foot .btn { flex: 1 1 9rem; }
+@media (max-width: 30rem) {
+  .req-top { flex-direction: column; }
+  .req-card .req-state { justify-items: start; text-align: start; max-width: none; grid-auto-flow: column; align-items: center; gap: 0.5rem; }
+}

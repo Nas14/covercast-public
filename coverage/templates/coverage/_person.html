@@ -38,7 +38,7 @@
       {% if c.donor_site %}<li class="positive" data-icon="✓">{{ c.donor_site_name }} يبقى عند حده الأدنى</li>{% else %}<li class="positive" data-icon="✓">لا يؤثر على أي موقع آخر</li>{% endif %}
       {% for r in c.reasons %}{% if r.code != "REQ_MET" and r.code != "KEEPS_MIN_AT_SITE" %}<li class="{{ r.kind }}" data-icon="{{ r.icon }}">{{ r.text_ar }}</li>{% endif %}{% endfor %}
     </ul>
-    <p class="note">بعد التأكيد يُحجز المقعد، ويظهر لك رابط ترسله إلى {{ c.first_name }} ليقبل أو يعتذر. إن اعتذر، تعود الفجوة إلى «يحتاج قرارك»{% if c.donor_site %} ويعود إلى {{ c.donor_site_name }}{% endif %}.</p>
+    <p class="note">بعد التأكيد يُحجز المقعد، ويظهر لك رابط ترسله إلى {{ c.first_name }} ليقبل أو يعتذر. إن اعتذر، تعود الفجوة إلى بطاقة الموقع في اللوحة{% if c.donor_site %} ويعود إلى {{ c.donor_site_name }}{% endif %}.</p>
     <div class="actions">
       <button class="btn" type="button" data-confirm-approve>{% if c.near_cap %}اعتماد رغم التنبيه{% else %}تأكيد الاعتماد{% endif %}</button>
       <button class="btn quiet" type="button" data-cancel>رجوع</button>

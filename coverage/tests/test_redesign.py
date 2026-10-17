@@ -174,6 +174,12 @@ class RequestsPage(RedesignCase):
         respond(offer_token(result.assignment), accept=True)
         t = self.text(self.c.get("/requests"))
         self.assertIn("قبِل التكليف مؤكد", t)
+        self.assertNotIn("req-table", self.c.get("/requests").content.decode())   # round 8: cards, not a table
+
+    def test_bare_top_class_never_styles_the_top_candidate(self):
+        # round 8 bug: header rules written as `.top` also painted `li.person.top` (the first candidate)
+        css = (Path(__file__).resolve().parents[1] / "static" / "coverage" / "covercast.css").read_text(encoding="utf-8")
+        self.assertIsNone(re.search(r"(^|[\s,(])\.top\b", css, re.M))
 
     def test_declined_points_back_to_the_board(self):
         result = self.approve_noura()

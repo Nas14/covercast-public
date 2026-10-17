@@ -1,4 +1,6 @@
-{# The requests list that the 5-second poll replaces (views.requests_live). #}
+{% comment %}The requests list that the 5-second poll replaces (views.requests_live). One card per request, the same
+   parts in the same places: who and the state on top, where, then the facts, then the actions at the bottom.
+   Actions follow one rule: a filled button only when something waits for the supervisor.{% endcomment %}
 {% if rows %}
 <div class="req-tools" data-anchor="req-tools">
   <div class="chips js-only" role="group" aria-label="عرض الطلبات">
@@ -8,24 +10,34 @@
     <button type="button" data-filter="declined" aria-pressed="false">اعتذر {{ counts.declined }}</button>
   </div>
 </div>
-<table class="req-table" data-filter-scope>
-  <thead><tr><th scope="col">الموظف</th><th scope="col">الموقع والمناوبة</th><th scope="col">الاعتماد</th><th scope="col">الحالة</th><th scope="col"><span class="visually-hidden">إجراء</span></th></tr></thead>
-  <tbody>
-    {% for r in rows %}
-    <tr data-state="{{ r.state }}" data-anchor="req-{{ r.a.id }}" data-request="{{ r.a.id }}">
-      <td><div class="req-who"><span class="avatar" aria-hidden="true">{{ r.initial }}</span><div><b>{{ r.a.employee.name }}</b><small>{{ r.category_ar }} <span class="code">{{ r.a.employee.code }}</span></small></div></div></td>
-      <td class="req-where"><b>{{ r.a.site.name }}</b><small>{{ r.a.shift.date|date:"l j F" }}، المناوبة {{ r.a.shift.get_slot_display }}{% if r.a.moved_from %}، منقول من {{ r.a.moved_from.site.name }}{% endif %}</small></td>
-      <td class="req-time">{% if r.approved_at %}<span class="ltr">{{ r.approved_at|date:"H:i" }}</span><small>{{ r.approved_at|date:"j F" }}{% if r.approver %}، اعتمده {{ r.approver }}{% endif %}</small>{% endif %}</td>
-      <td class="req-state">
-        <span class="pill {% if r.state == 'waiting' %}waiting{% elif r.state == 'accepted' %}covered{% elif r.state == 'declined' %}confirmed{% endif %}">{{ r.state_ar }}</span>
-        <small>{{ r.state_note }}{% if r.responded_at %}، الرد <span class="ltr">{{ r.responded_at|date:"H:i" }}</span>{% endif %}</small>
-      </td>
-      <td class="req-act">{% if r.state == "waiting" %}{% with l=r.link %}{% include "coverage/_copy_link.html" %}{% endwith %}{% endif %}
-        {% if r.state == "declined" %}<a class="btn small" href="{{ r.board }}">افتح لوحة اليوم</a>{% else %}<a class="link" href="{{ r.board }}">لوحة {{ r.a.shift.date|date:"j F" }}</a>{% endif %}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<ol class="req-list" data-filter-scope>
+  {% for r in rows %}
+  <li class="req-card {% if r.state == 'waiting' %}waiting{% elif r.state == 'accepted' %}covered{% elif r.state == 'declined' %}confirmed{% else %}closed{% endif %}"
+      data-state="{{ r.state }}" data-anchor="req-{{ r.a.id }}" data-request="{{ r.a.id }}">
+    <div class="req-top">
+      <div class="req-who"><span class="avatar" aria-hidden="true">{{ r.initial }}</span>
+        <div><b>{{ r.a.employee.name }}</b><small>{{ r.category_ar }} <span class="code">{{ r.a.employee.code }}</span></small></div></div>
+      <div class="req-state"><span class="pill">{{ r.state_ar }}</span> <small>{{ r.state_note }}</small></div>
+    </div>
+    <div class="req-where">
+      <b>{{ r.a.site.name }}</b>
+      <span>{{ r.a.shift.date|date:"l j F" }}، المناوبة {{ r.a.shift.get_slot_display }}</span>
+      {% if r.a.moved_from %}<span class="faint">منقول من {{ r.a.moved_from.site.name }}</span>{% endif %}
+    </div>
+    <dl class="req-facts">
+      <div><dt>الاعتماد</dt><dd>{% if r.approved_at %}<span class="ltr">{{ r.approved_at|date:"H:i" }}</span>، {{ r.approved_at|date:"j F" }}{% if r.approver %}، اعتمده {{ r.approver }}{% endif %}{% else %}—{% endif %}</dd></div>
+      <div><dt>الرد</dt><dd>{% if r.responded_at %}<span class="ltr">{{ r.responded_at|date:"H:i" }}</span>، {{ r.responded_at|date:"j F" }}{% else %}لم يرد بعد{% endif %}</dd></div>
+      {% if r.state == "waiting" %}<div><dt>رابط الموظف</dt><dd>{% if r.link.url %}صالح حتى <span class="ltr">{{ r.link.expires|date:"H:i" }}</span>، {{ r.link.expires|date:"j F" }}{% else %}انتهت صلاحية الرابط{% endif %}</dd></div>{% endif %}
+    </dl>
+    <div class="req-foot">
+      {% if r.state == "waiting" %}{% with l=r.link %}{% include "coverage/_copy_link.html" %}{% endwith %}
+        <a class="btn small quiet" href="{{ r.board }}">لوحة {{ r.a.shift.date|date:"j F" }}</a>
+      {% elif r.state == "declined" %}<a class="btn small" href="{{ r.board }}">افتح لوحة اليوم</a>
+      {% else %}<a class="btn small quiet" href="{{ r.board }}">لوحة {{ r.a.shift.date|date:"j F" }}</a>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
 <p class="empty-filter" data-empty hidden>لا طلبات بهذه الحالة.</p>
 {% else %}
 <div class="empty" data-anchor="req-empty">
